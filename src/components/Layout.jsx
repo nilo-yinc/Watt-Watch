@@ -18,9 +18,9 @@ const Layout = () => {
     { path: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
     { path: '/alerts', icon: AlertTriangle, label: 'Alerts' },
     { path: '/analytics', icon: BarChart3, label: 'Analytics' },
-    { path: '/computer-lab', icon: Monitor, label: 'Computer Labs' },
+    { path: '/computer-labs', icon: Monitor, label: 'Computer Labs' },
     { path: '/heatmap', icon: Map, label: 'Heatmap' },
-    { path: '/configuration', icon: Settings, label: 'Configuration' },
+    { path: '/rules', icon: Settings, label: 'Rules' },
     { path: '/privacy', icon: Shield, label: 'Privacy' },
     { path: '/audit-logs', icon: FileText, label: 'Audit Logs' }
   ];

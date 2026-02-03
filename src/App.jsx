@@ -7,9 +7,9 @@ import Dashboard from './pages/Dashboard';
 import RoomDetail from './pages/RoomDetail';
 import Alerts from './pages/Alerts';
 import Analytics from './pages/Analytics';
-import ComputerLab from './pages/ComputerLab';
+import ComputerLabs from './pages/ComputerLabs';
 import Heatmap from './pages/Heatmap';
-import Configuration from './pages/Configuration';
+import Rules from './pages/Rules';
 import Privacy from './pages/Privacy';
 import AuditLogs from './pages/AuditLogs';
 import './App.css';
@@ -32,9 +32,9 @@ function App() {
             <Route path="room/:id" element={<RoomDetail />} />
             <Route path="alerts" element={<Alerts />} />
             <Route path="analytics" element={<Analytics />} />
-            <Route path="computer-lab" element={<ComputerLab />} />
+            <Route path="computer-labs" element={<ComputerLabs />} />
             <Route path="heatmap" element={<Heatmap />} />
-            <Route path="configuration" element={<Configuration />} />
+            <Route path="rules" element={<Rules />} />
             <Route path="privacy" element={<Privacy />} />
             <Route path="audit-logs" element={<AuditLogs />} />
             <Route path="*" element={<Navigate to="/dashboard" replace />} />

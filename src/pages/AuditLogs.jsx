@@ -1,167 +1,168 @@
-import { useEffect, useRef } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { gsap } from 'gsap';
-import { FileText, Clock, MapPin, Activity, CheckCircle } from 'lucide-react';
+import {
+  FileText,
+  Clock,
+  Building2,
+  Activity,
+  MessageSquare,
+  Gauge,
+  Filter,
+  Download
+} from 'lucide-react';
 import { auditLogs } from '../data/mockData';
 
 const AuditLogs = () => {
-  const logsRef = useRef([]);
+  const pageRef = useRef(null);
+  const tableRef = useRef(null);
+  const rowRefs = useRef([]);
 
   useEffect(() => {
-    const delay = setTimeout(() => {
-      const items = logsRef.current.filter(Boolean);
-      if (items.length === 0) return;
+    // Page animation
+    gsap.fromTo(pageRef.current,
+      { opacity: 0 },
+      { opacity: 1, duration: 0.4, ease: 'power2.out' }
+    );
 
-      const ctx = gsap.context(() => {
-        gsap.from(items, {
-          x: -20,
-          opacity: 0,
-          duration: 0.5,
-          stagger: 0.08,
-          ease: 'power3.out'
-        });
-      });
+    // Table animation
+    gsap.fromTo(tableRef.current,
+      { opacity: 0, y: 20 },
+      { opacity: 1, y: 0, duration: 0.4, delay: 0.2, ease: 'power2.out' }
+    );
 
-      return () => ctx.revert();
-    }, 50);
-
-    return () => clearTimeout(delay);
-  }, [auditLogs.length]);
+    // Row animations
+    rowRefs.current.forEach((ref, index) => {
+      if (ref) {
+        gsap.fromTo(ref,
+          { opacity: 0, x: -20 },
+          { opacity: 1, x: 0, duration: 0.3, delay: 0.3 + index * 0.05, ease: 'power2.out' }
+        );
+      }
+    });
+  }, []);
 
   const formatTimestamp = (timestamp) => {
     const date = new Date(timestamp);
-    return date.toLocaleString('en-US', {
-      month: 'short',
-      day: 'numeric',
-      year: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-      second: '2-digit'
-    });
+    return {
+      date: date.toLocaleDateString('en-IN', { day: 'numeric', month: 'short' }),
+      time: date.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })
+    };
   };
 
-  const getActionColor = (action) => {
-    if (action.includes('Power OFF')) return '#ef4444';
-    if (action.includes('Alert')) return '#f59e0b';
-    if (action.includes('Efficiency') || action.includes('Verified')) return '#10b981';
-    if (action.includes('Override')) return '#0ea5e9';
-    return '#3b82f6';
+  const getConfidenceColor = (level) => {
+    if (level >= 95) return 'confidence-high';
+    if (level >= 85) return 'confidence-medium';
+    return 'confidence-low';
   };
 
   const getActionIcon = (action) => {
-    if (action.includes('Power OFF')) return '🔌';
-    if (action.includes('Alert')) return '⚠️';
-    if (action.includes('Efficiency')) return '✓';
-    if (action.includes('Override')) return '🔧';
-    return '📊';
+    if (action.includes('reduction')) return <Activity size={16} />;
+    if (action.includes('Alert')) return <MessageSquare size={16} />;
+    if (action.includes('verified')) return <Activity size={16} />;
+    if (action.includes('override')) return <Gauge size={16} />;
+    if (action.includes('activated')) return <Activity size={16} />;
+    return <FileText size={16} />;
   };
 
   return (
-    <div className="audit-logs-container">
-      <div className="audit-logs-header">
-        <div className="header-left">
-          <FileText size={32} color="#3b82f6" />
-          <div>
-            <h1>Audit Logs</h1>
-            <p className="audit-subtitle">
-              Complete record of all system actions and decisions
-            </p>
-          </div>
-        </div>
-        <div className="logs-count">
-          <Activity size={20} />
-          <span>{auditLogs.length} Total Events</span>
-        </div>
+    <div className="audit-logs-page" ref={pageRef}>
+      <div className="page-header">
+        <h1>
+          <FileText size={28} />
+          Audit Logs
+        </h1>
+        <p className="header-description">
+          Complete history of all system actions and automated decisions
+        </p>
       </div>
 
-      <div className="simulation-notice">
-        <span className="notice-badge">Simulated Events</span>
-        <p>All events shown below are simulated for prototype demonstration purposes</p>
+      {/* Filters */}
+      <div className="logs-controls">
+        <button className="btn btn-secondary btn-sm">
+          <Filter size={16} />
+          Filter
+        </button>
+        <button className="btn btn-secondary btn-sm">
+          <Download size={16} />
+          Export CSV
+        </button>
       </div>
 
-      <div className="logs-table-container">
+      {/* Logs Table */}
+      <div className="logs-table-wrapper" ref={tableRef}>
         <table className="logs-table">
           <thead>
             <tr>
               <th>Timestamp</th>
               <th>Room</th>
-              <th>Action Taken</th>
+              <th>Action</th>
               <th>Reason</th>
               <th>Confidence</th>
               <th>Status</th>
             </tr>
           </thead>
           <tbody>
-            {auditLogs.map((log, index) => (
-              <tr
-                key={log.id}
-                ref={el => logsRef.current[index] = el}
-                className="log-row"
-              >
-                <td className="timestamp-cell">
-                  <Clock size={16} />
-                  <span>{formatTimestamp(log.timestamp)}</span>
-                </td>
-                <td className="room-cell">
-                  <MapPin size={16} />
-                  <span>{log.room}</span>
-                </td>
-                <td className="action-cell">
-                  <div
-                    className="action-badge"
-                    style={{
-                      backgroundColor: `${getActionColor(log.action)}20`,
-                      color: getActionColor(log.action)
-                    }}
-                  >
-                    <span className="action-icon">{getActionIcon(log.action)}</span>
-                    <span>{log.action}</span>
-                  </div>
-                </td>
-                <td className="reason-cell">{log.reason}</td>
-                <td className="confidence-cell">
-                  <div className="confidence-bar-container">
-                    <div
-                      className="confidence-bar"
-                      style={{
-                        width: log.confidence === 'N/A' ? '0%' : log.confidence,
-                        backgroundColor: getActionColor(log.action)
-                      }}
-                    ></div>
-                    <span className="confidence-text">{log.confidence}</span>
-                  </div>
-                </td>
-                <td className="status-cell">
-                  {log.simulated && (
-                    <span className="simulated-badge">
-                      <CheckCircle size={14} />
-                      Simulated Event
-                    </span>
-                  )}
-                </td>
-              </tr>
-            ))}
+            {auditLogs.map((log, index) => {
+              const ts = formatTimestamp(log.timestamp);
+              return (
+                <tr
+                  key={log.id}
+                  className="log-row"
+                  ref={el => rowRefs.current[index] = el}
+                >
+                  <td className="timestamp-cell">
+                    <Clock size={14} />
+                    <div className="timestamp">
+                      <span className="date">{ts.date}</span>
+                      <span className="time">{ts.time}</span>
+                    </div>
+                  </td>
+                  <td className="room-cell">
+                    <Building2 size={14} />
+                    <span>{log.room}</span>
+                  </td>
+                  <td className="action-cell">
+                    <div className="action-badge">
+                      {getActionIcon(log.action)}
+                      <span>{log.action}</span>
+                    </div>
+                  </td>
+                  <td className="reason-cell">
+                    <span>{log.reason}</span>
+                  </td>
+                  <td className="confidence-cell">
+                    {log.confidence !== null ? (
+                      <div className={`confidence-indicator ${getConfidenceColor(log.confidence)}`}>
+                        <Gauge size={14} />
+                        <span>{log.confidence}%</span>
+                      </div>
+                    ) : (
+                      <span className="confidence-na">—</span>
+                    )}
+                  </td>
+                  <td className="status-cell">
+                    {log.simulated && (
+                      <span className="simulated-badge">
+                        <span className="badge-dot"></span>
+                        Simulated
+                      </span>
+                    )}
+                  </td>
+                </tr>
+              );
+            })}
           </tbody>
         </table>
       </div>
 
+      {/* Info Footer */}
       <div className="logs-footer">
-        <div className="footer-info">
-          <h3>About Audit Logs</h3>
-          <p>
-            The audit log maintains a complete, immutable record of all system actions. Each entry includes:
-          </p>
-          <ul>
-            <li><strong>Timestamp:</strong> Exact date and time of the event</li>
-            <li><strong>Room:</strong> Location where the action occurred</li>
-            <li><strong>Action:</strong> What the system did (alert, power cut, verification, etc.)</li>
-            <li><strong>Reason:</strong> Why the action was taken based on detected conditions</li>
-            <li><strong>Confidence:</strong> AI/CV confidence level in the detection (when applicable)</li>
-          </ul>
-          <p className="footer-note">
-            In production deployment, these logs would be stored securely and could be exported for
-            compliance reporting, energy audits, and system performance analysis.
-          </p>
-        </div>
+        <h3>About System Logs</h3>
+        <p>
+          Audit logs provide a complete, immutable record of all system actions. Each entry includes
+          the timestamp, affected room, action taken, reasoning, and confidence level of automated decisions.
+          These logs are essential for compliance, troubleshooting, and energy audits.
+        </p>
       </div>
     </div>
   );

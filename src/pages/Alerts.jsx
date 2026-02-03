@@ -1,40 +1,54 @@
-import { useEffect, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useEffect, useRef } from 'react';
+import { Link } from 'react-router-dom';
 import { gsap } from 'gsap';
-import { AlertTriangle, Clock, MapPin, Zap } from 'lucide-react';
-import { alerts } from '../data/mockData';
+import {
+  AlertTriangle,
+  Clock,
+  Zap,
+  ArrowRight,
+  CheckCircle,
+  XCircle,
+  AlertCircle
+} from 'lucide-react';
+import { alertsData } from '../data/mockData';
 
 const Alerts = () => {
-  const navigate = useNavigate();
   const alertsRef = useRef([]);
+  const headerRef = useRef(null);
 
   useEffect(() => {
-    const delay = setTimeout(() => {
-      const items = alertsRef.current.filter(Boolean);
-      if (items.length === 0) return;
+    // Animate header
+    gsap.fromTo(headerRef.current,
+      { opacity: 0, y: -20 },
+      { opacity: 1, y: 0, duration: 0.4, ease: 'power2.out' }
+    );
 
-      const ctx = gsap.context(() => {
-        gsap.from(items, {
-          x: -30,
-          opacity: 0,
-          duration: 0.6,
-          stagger: 0.1,
-          ease: 'power3.out'
-        });
-      });
-
-      return () => ctx.revert();
-    }, 50);
-
-    return () => clearTimeout(delay);
-  }, [alerts.length]);
+    // Animate alerts with stagger
+    alertsRef.current.forEach((ref, index) => {
+      if (ref) {
+        gsap.fromTo(ref,
+          { opacity: 0, x: -30 },
+          { opacity: 1, x: 0, duration: 0.4, delay: 0.1 + index * 0.05, ease: 'power2.out' }
+        );
+      }
+    });
+  }, []);
 
   const getSeverityColor = (severity) => {
     switch (severity) {
-      case 'high': return '#ef4444';
-      case 'medium': return '#f59e0b';
-      case 'low': return '#3b82f6';
-      default: return '#6b7280';
+      case 'high': return 'alert-high';
+      case 'medium': return 'alert-medium';
+      case 'low': return 'alert-low';
+      default: return 'alert-grey';
+    }
+  };
+
+  const getSeverityIcon = (severity) => {
+    switch (severity) {
+      case 'high': return <AlertTriangle size={18} />;
+      case 'medium': return <AlertCircle size={18} />;
+      case 'low': return <AlertTriangle size={18} />;
+      default: return <Zap size={18} />;
     }
   };
 
@@ -44,95 +58,108 @@ const Alerts = () => {
 
   const formatTimestamp = (timestamp) => {
     const date = new Date(timestamp);
-    return date.toLocaleString('en-US', {
-      month: 'short',
+    return date.toLocaleDateString('en-IN', {
       day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
+      month: 'short'
     });
   };
 
   return (
-    <div className="alerts-container">
-      <div className="alerts-header">
-        <h1>Energy Waste Alerts</h1>
-        <div className="alerts-summary">
-          <div className="summary-item">
-            <AlertTriangle size={20} color="#ef4444" />
-            <span>{alerts.length} Active Alerts</span>
+    <div className="alerts-page">
+      <div className="page-header" ref={headerRef}>
+        <div className="header-content">
+          <h1>
+            <AlertTriangle size={28} />
+            Energy Waste Alerts
+          </h1>
+          <p className="header-description">
+            Active alerts requiring attention. All actions are simulated for demonstration.
+          </p>
+        </div>
+        <div className="header-stats">
+          <div className="stat">
+            <span className="stat-value">{alertsData.length}</span>
+            <span className="stat-label">Active Alerts</span>
+          </div>
+          <div className="stat">
+            <span className="stat-value">
+              {alertsData.reduce((sum, a) => sum + a.estimatedWaste, 0).toFixed(1)}
+            </span>
+            <span className="stat-label">kWh Wasting</span>
           </div>
         </div>
       </div>
 
       <div className="alerts-list">
-        {alerts.map((alert, index) => (
+        {alertsData.map((alert, index) => (
           <div
             key={alert.id}
+            className={`alert-card ${getSeverityColor(alert.severity)}`}
             ref={el => alertsRef.current[index] = el}
-            className="alert-card"
-            onClick={() => navigate(`/room/${alert.roomId}`)}
           >
-            <div className="alert-icon" style={{ backgroundColor: `${getSeverityColor(alert.severity)}20` }}>
-              <AlertTriangle size={24} color={getSeverityColor(alert.severity)} />
+            <div className="alert-header">
+              <div className="alert-severity">
+                {getSeverityIcon(alert.severity)}
+                <span className="severity-label">{alert.severity.toUpperCase()}</span>
+              </div>
+              <span className="simulated-badge">
+                <Zap size={12} /> Auto Action Simulated
+              </span>
             </div>
 
-            <div className="alert-content">
-              <div className="alert-header-row">
-                <h3>{alert.roomName}</h3>
-                <div className="alert-badges">
-                  <span
-                    className="severity-badge"
-                    style={{
-                      backgroundColor: `${getSeverityColor(alert.severity)}20`,
-                      color: getSeverityColor(alert.severity)
-                    }}
-                  >
-                    {alert.severity.toUpperCase()}
-                  </span>
-                  {alert.autoActionSimulated && (
-                    <span className="auto-action-badge">
-                      Auto Action Simulated
-                    </span>
-                  )}
-                </div>
+            <div className="alert-body">
+              <div className="alert-main">
+                <h3 className="alert-room">{alert.roomName}</h3>
+                <span className="alert-room-type">{alert.roomType}</span>
               </div>
 
               <div className="alert-details">
-                <div className="alert-detail-row">
-                  <MapPin size={16} />
-                  <span className="detail-label">Room Type:</span>
-                  <span className="detail-value">{alert.roomType}</span>
+                <div className="detail-item">
+                  <span className="detail-label">Wasting Appliance</span>
+                  <span className="detail-value">{alert.wastingAppliance}</span>
                 </div>
-
-                <div className="alert-detail-row">
-                  <Zap size={16} />
-                  <span className="detail-label">Wasting Appliance:</span>
-                  <span className="detail-value">{alert.appliance}</span>
+                <div className="detail-item">
+                  <span className="detail-label">Duration</span>
+                  <span className="detail-value">
+                    <Clock size={14} /> {formatDuration(alert.duration)}
+                  </span>
                 </div>
-
-                <div className="alert-detail-row">
-                  <Clock size={16} />
-                  <span className="detail-label">Duration:</span>
-                  <span className="detail-value">{formatDuration(alert.duration)}</span>
+                <div className="detail-item">
+                  <span className="detail-label">Est. Waste</span>
+                  <span className="detail-value waste">{alert.estimatedWaste} kWh</span>
                 </div>
               </div>
 
-              <div className="alert-reason">
-                <strong>Reason:</strong> {alert.reason}
+              <div className="alert-action-status">
+                {alert.autoActionTaken ? (
+                  <div className="action-taken">
+                    <CheckCircle size={16} />
+                    <span>{alert.actionDetails}</span>
+                  </div>
+                ) : (
+                  <div className="action-pending">
+                    <Clock size={16} />
+                    <span>{alert.actionDetails}</span>
+                  </div>
+                )}
               </div>
+            </div>
 
-              <div className="alert-footer">
-                <span className="alert-timestamp">{formatTimestamp(alert.timestamp)}</span>
-                <button className="view-room-btn">View Room Details →</button>
-              </div>
+            <div className="alert-footer">
+              <span className="alert-time">
+                Detected at {formatTimestamp(alert.timestamp)}
+              </span>
+              <Link to={`/room/${alert.roomId}`} className="view-room-btn">
+                View Room <ArrowRight size={14} />
+              </Link>
             </div>
           </div>
         ))}
       </div>
 
-      {alerts.length === 0 && (
-        <div className="no-alerts">
-          <Zap size={48} color="#10b981" />
+      {alertsData.length === 0 && (
+        <div className="empty-state">
+          <Zap size={48} />
           <h2>No Active Alerts</h2>
           <p>All rooms are operating efficiently!</p>
         </div>

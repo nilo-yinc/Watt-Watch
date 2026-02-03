@@ -12,35 +12,39 @@ const ComputerLab = () => {
   const computerLabs = rooms.filter(r => r.type === 'Computer Lab');
 
   useEffect(() => {
-    const stats = statsRef.current.filter(Boolean);
-    const labs = labsRef.current.filter(Boolean);
-    
-    if (stats.length === 0 && labs.length === 0) return;
+    const delay = setTimeout(() => {
+      const stats = statsRef.current.filter(Boolean);
+      const labs = labsRef.current.filter(Boolean);
+      
+      if (stats.length === 0 && labs.length === 0) return;
 
-    const ctx = gsap.context(() => {
-      if (stats.length > 0) {
-        gsap.from(stats, {
-          scale: 0.9,
-          opacity: 0,
-          duration: 0.6,
-          stagger: 0.1,
-          ease: 'back.out(1.7)'
-        });
-      }
+      const ctx = gsap.context(() => {
+        if (stats.length > 0) {
+          gsap.from(stats, {
+            scale: 0.9,
+            opacity: 0,
+            duration: 0.6,
+            stagger: 0.1,
+            ease: 'back.out(1.7)'
+          });
+        }
 
-      if (labs.length > 0) {
-        gsap.from(labs, {
-          y: 30,
-          opacity: 0,
-          duration: 0.8,
-          stagger: 0.15,
-          delay: 0.3,
-          ease: 'power3.out'
-        });
-      }
-    });
+        if (labs.length > 0) {
+          gsap.from(labs, {
+            y: 30,
+            opacity: 0,
+            duration: 0.8,
+            stagger: 0.15,
+            delay: 0.3,
+            ease: 'power3.out'
+          });
+        }
+      });
 
-    return () => ctx.revert();
+      return () => ctx.revert();
+    }, 50);
+
+    return () => clearTimeout(delay);
   }, []);
 
   return (

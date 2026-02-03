@@ -7,20 +7,24 @@ const AuditLogs = () => {
   const logsRef = useRef([]);
 
   useEffect(() => {
-    const items = logsRef.current.filter(Boolean);
-    if (items.length === 0) return;
+    const delay = setTimeout(() => {
+      const items = logsRef.current.filter(Boolean);
+      if (items.length === 0) return;
 
-    const ctx = gsap.context(() => {
-      gsap.from(items, {
-        x: -20,
-        opacity: 0,
-        duration: 0.5,
-        stagger: 0.08,
-        ease: 'power3.out'
+      const ctx = gsap.context(() => {
+        gsap.from(items, {
+          x: -20,
+          opacity: 0,
+          duration: 0.5,
+          stagger: 0.08,
+          ease: 'power3.out'
+        });
       });
-    });
 
-    return () => ctx.revert();
+      return () => ctx.revert();
+    }, 50);
+
+    return () => clearTimeout(delay);
   }, [auditLogs.length]);
 
   const formatTimestamp = (timestamp) => {

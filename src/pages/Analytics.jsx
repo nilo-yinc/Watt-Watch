@@ -32,54 +32,58 @@ const Analytics = () => {
   ];
 
   useEffect(() => {
-    const kpiElements = kpiRef.current.filter(Boolean);
-    const chartElements = chartsRef.current.filter(Boolean);
-    
-    if (kpiElements.length === 0 && chartElements.length === 0) return;
+    const delay = setTimeout(() => {
+      const kpiElements = kpiRef.current.filter(Boolean);
+      const chartElements = chartsRef.current.filter(Boolean);
+      
+      if (kpiElements.length === 0 && chartElements.length === 0) return;
 
-    const ctx = gsap.context(() => {
-      if (kpiElements.length > 0) {
-        gsap.from(kpiElements, {
-          y: 30,
-          opacity: 0,
-          duration: 0.6,
-          stagger: 0.1,
-          ease: 'power3.out'
-        });
+      const ctx = gsap.context(() => {
+        if (kpiElements.length > 0) {
+          gsap.from(kpiElements, {
+            y: 30,
+            opacity: 0,
+            duration: 0.6,
+            stagger: 0.1,
+            ease: 'power3.out'
+          });
 
-        kpiRef.current.forEach((el, index) => {
-          if (el) {
-            const valueElement = el.querySelector('.kpi-value');
-            const targetValue = kpis[index].value;
-            const obj = { value: 0 };
+          kpiRef.current.forEach((el, index) => {
+            if (el) {
+              const valueElement = el.querySelector('.kpi-value');
+              const targetValue = kpis[index].value;
+              const obj = { value: 0 };
 
-            gsap.to(obj, {
-              value: targetValue,
-              duration: 2,
-              delay: 0.3 + index * 0.1,
-              ease: 'power2.out',
-              onUpdate: () => {
-                valueElement.textContent = Math.round(obj.value);
-              }
-            });
-          }
-        });
-      }
+              gsap.to(obj, {
+                value: targetValue,
+                duration: 2,
+                delay: 0.3 + index * 0.1,
+                ease: 'power2.out',
+                onUpdate: () => {
+                  if (valueElement) valueElement.textContent = Math.round(obj.value);
+                }
+              });
+            }
+          });
+        }
 
-      if (chartElements.length > 0) {
-        gsap.from(chartElements, {
-          y: 50,
-          opacity: 0,
-          duration: 0.8,
-          stagger: 0.2,
-          delay: 0.4,
-          ease: 'power3.out'
-        });
-      }
-    });
+        if (chartElements.length > 0) {
+          gsap.from(chartElements, {
+            y: 50,
+            opacity: 0,
+            duration: 0.8,
+            stagger: 0.2,
+            delay: 0.4,
+            ease: 'power3.out'
+          });
+        }
+      });
 
-    return () => ctx.revert();
-  }, []);
+      return () => ctx.revert();
+    }, 50);
+
+    return () => clearTimeout(delay);
+  }, [kpis.length]);
 
   const maxEnergy = Math.max(...analyticsData.energySavedOverTime.map(d => d.energy));
   const maxWaste = Math.max(...analyticsData.wasteByRoom.map(d => d.waste));

@@ -10,20 +10,24 @@ const Heatmap = () => {
   const gridRef = useRef([]);
 
   useEffect(() => {
-    const items = gridRef.current.filter(Boolean);
-    if (items.length === 0) return;
+    const delay = setTimeout(() => {
+      const items = gridRef.current.filter(Boolean);
+      if (items.length === 0) return;
 
-    const ctx = gsap.context(() => {
-      gsap.from(items, {
-        scale: 0.8,
-        opacity: 0,
-        duration: 0.5,
-        stagger: 0.05,
-        ease: 'back.out(1.7)'
+      const ctx = gsap.context(() => {
+        gsap.from(items, {
+          scale: 0.8,
+          opacity: 0,
+          duration: 0.5,
+          stagger: 0.05,
+          ease: 'back.out(1.7)'
+        });
       });
-    });
 
-    return () => ctx.revert();
+      return () => ctx.revert();
+    }, 50);
+
+    return () => clearTimeout(delay);
   }, [timeFilter]);
 
   const getHeatmapColor = (status) => {

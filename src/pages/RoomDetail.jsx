@@ -17,18 +17,22 @@ const RoomDetail = () => {
   const relayButtonRef = useRef(null);
 
   useEffect(() => {
-    if (!contentRef.current) return;
+    const delay = setTimeout(() => {
+      if (!contentRef.current) return;
 
-    const ctx = gsap.context(() => {
-      gsap.from(contentRef.current, {
-        y: 30,
-        opacity: 0,
-        duration: 0.8,
-        ease: 'power3.out'
+      const ctx = gsap.context(() => {
+        gsap.from(contentRef.current, {
+          y: 30,
+          opacity: 0,
+          duration: 0.8,
+          ease: 'power3.out'
+        });
       });
-    });
 
-    return () => ctx.revert();
+      return () => ctx.revert();
+    }, 50);
+
+    return () => clearTimeout(delay);
   }, []);
 
   if (!room) {

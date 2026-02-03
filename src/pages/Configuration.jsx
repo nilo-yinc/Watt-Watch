@@ -8,20 +8,24 @@ const Configuration = () => {
   const cardsRef = useRef([]);
 
   useEffect(() => {
-    const cards = cardsRef.current.filter(Boolean);
-    if (cards.length === 0) return;
+    const delay = setTimeout(() => {
+      const cards = cardsRef.current.filter(Boolean);
+      if (cards.length === 0) return;
 
-    const ctx = gsap.context(() => {
-      gsap.from(cards, {
-        y: 30,
-        opacity: 0,
-        duration: 0.6,
-        stagger: 0.15,
-        ease: 'power3.out'
+      const ctx = gsap.context(() => {
+        gsap.from(cards, {
+          y: 30,
+          opacity: 0,
+          duration: 0.6,
+          stagger: 0.1,
+          ease: 'power3.out'
+        });
       });
-    });
 
-    return () => ctx.revert();
+      return () => ctx.revert();
+    }, 50);
+
+    return () => clearTimeout(delay);
   }, []);
 
   const handleToggle = (key) => {

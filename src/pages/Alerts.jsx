@@ -9,20 +9,24 @@ const Alerts = () => {
   const alertsRef = useRef([]);
 
   useEffect(() => {
-    const items = alertsRef.current.filter(Boolean);
-    if (items.length === 0) return;
+    const delay = setTimeout(() => {
+      const items = alertsRef.current.filter(Boolean);
+      if (items.length === 0) return;
 
-    const ctx = gsap.context(() => {
-      gsap.from(items, {
-        x: -30,
-        opacity: 0,
-        duration: 0.6,
-        stagger: 0.1,
-        ease: 'power3.out'
+      const ctx = gsap.context(() => {
+        gsap.from(items, {
+          x: -30,
+          opacity: 0,
+          duration: 0.6,
+          stagger: 0.1,
+          ease: 'power3.out'
+        });
       });
-    });
 
-    return () => ctx.revert();
+      return () => ctx.revert();
+    }, 50);
+
+    return () => clearTimeout(delay);
   }, [alerts.length]);
 
   const getSeverityColor = (severity) => {

@@ -32,41 +32,50 @@ const Analytics = () => {
   ];
 
   useEffect(() => {
+    const kpiElements = kpiRef.current.filter(Boolean);
+    const chartElements = chartsRef.current.filter(Boolean);
+    
+    if (kpiElements.length === 0 && chartElements.length === 0) return;
+
     const ctx = gsap.context(() => {
-      gsap.from(kpiRef.current, {
-        y: 30,
-        opacity: 0,
-        duration: 0.6,
-        stagger: 0.1,
-        ease: 'power3.out'
-      });
+      if (kpiElements.length > 0) {
+        gsap.from(kpiElements, {
+          y: 30,
+          opacity: 0,
+          duration: 0.6,
+          stagger: 0.1,
+          ease: 'power3.out'
+        });
 
-      kpiRef.current.forEach((el, index) => {
-        if (el) {
-          const valueElement = el.querySelector('.kpi-value');
-          const targetValue = kpis[index].value;
-          const obj = { value: 0 };
+        kpiRef.current.forEach((el, index) => {
+          if (el) {
+            const valueElement = el.querySelector('.kpi-value');
+            const targetValue = kpis[index].value;
+            const obj = { value: 0 };
 
-          gsap.to(obj, {
-            value: targetValue,
-            duration: 2,
-            delay: 0.3 + index * 0.1,
-            ease: 'power2.out',
-            onUpdate: () => {
-              valueElement.textContent = Math.round(obj.value);
-            }
-          });
-        }
-      });
+            gsap.to(obj, {
+              value: targetValue,
+              duration: 2,
+              delay: 0.3 + index * 0.1,
+              ease: 'power2.out',
+              onUpdate: () => {
+                valueElement.textContent = Math.round(obj.value);
+              }
+            });
+          }
+        });
+      }
 
-      gsap.from(chartsRef.current, {
-        y: 50,
-        opacity: 0,
-        duration: 0.8,
-        stagger: 0.2,
-        delay: 0.4,
-        ease: 'power3.out'
-      });
+      if (chartElements.length > 0) {
+        gsap.from(chartElements, {
+          y: 50,
+          opacity: 0,
+          duration: 0.8,
+          stagger: 0.2,
+          delay: 0.4,
+          ease: 'power3.out'
+        });
+      }
     });
 
     return () => ctx.revert();

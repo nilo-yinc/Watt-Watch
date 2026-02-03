@@ -8,8 +8,11 @@ const Configuration = () => {
   const cardsRef = useRef([]);
 
   useEffect(() => {
+    const cards = cardsRef.current.filter(Boolean);
+    if (cards.length === 0) return;
+
     const ctx = gsap.context(() => {
-      gsap.from(cardsRef.current, {
+      gsap.from(cards, {
         y: 30,
         opacity: 0,
         duration: 0.6,

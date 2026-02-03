@@ -17,6 +17,8 @@ const RoomDetail = () => {
   const relayButtonRef = useRef(null);
 
   useEffect(() => {
+    if (!contentRef.current) return;
+
     const ctx = gsap.context(() => {
       gsap.from(contentRef.current, {
         y: 30,

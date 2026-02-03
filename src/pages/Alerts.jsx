@@ -9,8 +9,11 @@ const Alerts = () => {
   const alertsRef = useRef([]);
 
   useEffect(() => {
+    const items = alertsRef.current.filter(Boolean);
+    if (items.length === 0) return;
+
     const ctx = gsap.context(() => {
-      gsap.from(alertsRef.current, {
+      gsap.from(items, {
         x: -30,
         opacity: 0,
         duration: 0.6,
@@ -20,7 +23,7 @@ const Alerts = () => {
     });
 
     return () => ctx.revert();
-  }, []);
+  }, [alerts.length]);
 
   const getSeverityColor = (severity) => {
     switch (severity) {

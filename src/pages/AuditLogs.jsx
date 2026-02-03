@@ -7,8 +7,11 @@ const AuditLogs = () => {
   const logsRef = useRef([]);
 
   useEffect(() => {
+    const items = logsRef.current.filter(Boolean);
+    if (items.length === 0) return;
+
     const ctx = gsap.context(() => {
-      gsap.from(logsRef.current, {
+      gsap.from(items, {
         x: -20,
         opacity: 0,
         duration: 0.5,
@@ -18,7 +21,7 @@ const AuditLogs = () => {
     });
 
     return () => ctx.revert();
-  }, []);
+  }, [auditLogs.length]);
 
   const formatTimestamp = (timestamp) => {
     const date = new Date(timestamp);

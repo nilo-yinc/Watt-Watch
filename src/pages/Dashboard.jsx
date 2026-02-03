@@ -1,103 +1,90 @@
-import { useEffect, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useEffect, useRef } from 'react';
+import { Link } from 'react-router-dom';
 import { gsap } from 'gsap';
-import { Activity, AlertTriangle, Zap, DollarSign, Eye, Lightbulb, Monitor, Fan } from 'lucide-react';
-import { rooms } from '../data/mockData';
+import { 
+  Building2, 
+  AlertTriangle, 
+  Zap, 
+  DollarSign,
+  Lightbulb,
+  Monitor,
+  Thermometer,
+  Fan,
+  Tv,
+  Users,
+  ArrowRight,
+  Info,
+  Camera,
+  Plug,
+  Radio,
+  Calendar,
+  Wind
+} from 'lucide-react';
+import { roomsData, dashboardKPIs } from '../data/mockData';
 
 const Dashboard = () => {
-  const navigate = useNavigate();
-  const kpiRef = useRef([]);
-  const cardsRef = useRef([]);
-
-  const kpis = [
-    {
-      label: 'Total Rooms Monitored',
-      value: rooms.length,
-      icon: Activity,
-      color: '#0ea5e9'
-    },
-    {
-      label: 'Active Energy Waste Cases',
-      value: rooms.filter(r => r.status === 'waste').length,
-      icon: AlertTriangle,
-      color: '#f59e0b'
-    },
-    {
-      label: 'Energy Saved Today (kWh)',
-      value: 189,
-      icon: Zap,
-      color: '#10b981'
-    },
-    {
-      label: 'Estimated Cost Saved',
-      value: 1847,
-      prefix: '$',
-      icon: DollarSign,
-      color: '#06b6d4'
-    }
-  ];
+  const kpiRefs = useRef([]);
+  const roomCardsRef = useRef([]);
+  const bannerRef = useRef(null);
 
   useEffect(() => {
-    // Ensure all refs are populated
-    const delay = setTimeout(() => {
-      const kpiElements = kpiRef.current.filter(Boolean);
-      const cardElements = cardsRef.current.filter(Boolean);
-      
-      if (kpiElements.length === 0 && cardElements.length === 0) return;
+    // Animate banner
+    gsap.fromTo(bannerRef.current,
+      { opacity: 0, y: -20 },
+      { opacity: 1, y: 0, duration: 0.5, ease: 'power2.out' }
+    );
 
-      const ctx = gsap.context(() => {
-        if (kpiElements.length > 0) {
-          gsap.from(kpiElements, {
-            y: 30,
-            opacity: 0,
-            duration: 0.6,
-            stagger: 0.1,
-            ease: 'power3.out'
-          });
+    // Animate KPI cards with counter
+    kpiRefs.current.forEach((ref, index) => {
+      if (ref) {
+        gsap.fromTo(ref,
+          { opacity: 0, y: 30, scale: 0.95 },
+          { opacity: 1, y: 0, scale: 1, duration: 0.5, delay: index * 0.1, ease: 'power2.out' }
+        );
+      }
+    });
 
-          kpiRef.current.forEach((el, index) => {
-            if (el) {
-              const valueElement = el.querySelector('.kpi-value');
-              const targetValue = kpis[index].value;
-              const obj = { value: 0 };
+    // Animate numbers
+    animateCounter('rooms-count', dashboardKPIs.totalRooms);
+    animateCounter('waste-count', dashboardKPIs.activeWasteCases);
+    animateCounter('energy-count', dashboardKPIs.energySavedToday, 1);
+    animateCounter('cost-count', dashboardKPIs.estimatedCostSaved, 2);
 
-              gsap.to(obj, {
-                value: targetValue,
-                duration: 2,
-                delay: 0.3 + index * 0.1,
-                ease: 'power2.out',
-                onUpdate: () => {
-                  if (valueElement) valueElement.textContent = Math.round(obj.value);
-                }
-              });
-            }
-          });
+    // Animate room cards
+    roomCardsRef.current.forEach((ref, index) => {
+      if (ref) {
+        gsap.fromTo(ref,
+          { opacity: 0, y: 40 },
+          { opacity: 1, y: 0, duration: 0.5, delay: 0.4 + index * 0.05, ease: 'power2.out' }
+        );
+      }
+    });
+  }, []);
+
+  const animateCounter = (id, target, decimals = 0) => {
+    const element = document.getElementById(id);
+    if (element) {
+      gsap.to(
+        { value: 0 },
+        {
+          value: target,
+          duration: 2,
+          delay: 0.5,
+          ease: 'power2.out',
+          onUpdate: function() {
+            element.textContent = this.targets()[0].value.toFixed(decimals);
+          }
         }
-
-        if (cardElements.length > 0) {
-          gsap.from(cardElements, {
-            y: 50,
-            opacity: 0,
-            duration: 0.8,
-            stagger: 0.1,
-            delay: 0.4,
-            ease: 'power3.out'
-          });
-        }
-      });
-
-      return () => ctx.revert();
-    }, 50);
-
-    return () => clearTimeout(delay);
-  }, [kpis]);
+      );
+    }
+  };
 
   const getStatusColor = (status) => {
     switch (status) {
-      case 'efficient': return '#10b981';
-      case 'waste': return '#ef4444';
-      case 'review': return '#f59e0b';
-      default: return '#6b7280';
+      case 'efficient': return 'status-green';
+      case 'waste': return 'status-red';
+      case 'review': return 'status-yellow';
+      default: return 'status-grey';
     }
   };
 
@@ -110,104 +97,175 @@ const Dashboard = () => {
     }
   };
 
-  const getApplianceIcon = (appliance) => {
-    switch (appliance) {
-      case 'lights': return <Lightbulb size={18} />;
-      case 'projector': return <Monitor size={18} />;
-      case 'desktops': return <Monitor size={18} />;
-      case 'fan': return <Fan size={18} />;
-      case 'ac': return <Fan size={18} />;
-      default: return <Zap size={18} />;
+  const getMonitoringIcon = (method) => {
+    switch (method) {
+      case 'Camera': return <Camera size={14} />;
+      case 'Smart Plug': return <Plug size={14} />;
+      case 'Sensor': return <Radio size={14} />;
+      case 'Schedule': return <Calendar size={14} />;
+      default: return <Zap size={14} />;
+    }
+  };
+
+  const getApplianceIcon = (type) => {
+    switch (type) {
+      case 'lights': return <Lightbulb size={16} />;
+      case 'projector': 
+      case 'desktops':
+      case 'computers': return <Monitor size={16} />;
+      case 'ac': return <Thermometer size={16} />;
+      case 'fans': return <Fan size={16} />;
+      case 'tv': return <Tv size={16} />;
+      case 'equipment': return <Monitor size={16} />;
+      case 'fume_hood': return <Wind size={16} />;
+      default: return <Zap size={16} />;
+    }
+  };
+
+  const handleCardHover = (ref, isEnter) => {
+    if (ref) {
+      gsap.to(ref, {
+        y: isEnter ? -8 : 0,
+        boxShadow: isEnter 
+          ? '0 20px 40px rgba(0, 0, 0, 0.12)' 
+          : '0 4px 15px rgba(0, 0, 0, 0.08)',
+        duration: 0.3,
+        ease: 'power2.out'
+      });
     }
   };
 
   return (
-    <div className="dashboard-container">
-      <div className="dashboard-header">
-        <h1>Campus Overview</h1>
-        <div className="simulation-banner">
-          ⚠️ All data shown is simulated for prototype demonstration
-        </div>
+    <div className="dashboard-page">
+      {/* Simulation Banner */}
+      <div className="simulation-banner" ref={bannerRef}>
+        <Info size={18} />
+        <span>All data shown is simulated for prototype demonstration. No real IoT hardware connected.</span>
       </div>
 
-      <div className="kpi-grid">
-        {kpis.map((kpi, index) => {
-          const Icon = kpi.icon;
-          return (
-            <div
-              key={index}
-              ref={el => kpiRef.current[index] = el}
-              className="kpi-card"
-            >
-              <div className="kpi-icon" style={{ backgroundColor: `${kpi.color}20`, color: kpi.color }}>
-                <Icon size={24} />
-              </div>
-              <div className="kpi-content">
-                <div className="kpi-value-wrapper">
-                  {kpi.prefix && <span className="kpi-prefix">{kpi.prefix}</span>}
-                  <span className="kpi-value">{kpi.value}</span>
-                </div>
-                <div className="kpi-label">{kpi.label}</div>
-              </div>
+      {/* KPI Section */}
+      <section className="kpi-section">
+        <h2 className="section-title">Campus Overview</h2>
+        <div className="kpi-grid">
+          <div 
+            className="kpi-card kpi-blue"
+            ref={el => kpiRefs.current[0] = el}
+          >
+            <div className="kpi-icon">
+              <Building2 size={24} />
             </div>
-          );
-        })}
-      </div>
+            <div className="kpi-content">
+              <span className="kpi-value" id="rooms-count">0</span>
+              <span className="kpi-label">Total Rooms Monitored</span>
+            </div>
+          </div>
 
-      <div className="rooms-section">
-        <h2>Room Status</h2>
+          <div 
+            className="kpi-card kpi-red"
+            ref={el => kpiRefs.current[1] = el}
+          >
+            <div className="kpi-icon">
+              <AlertTriangle size={24} />
+            </div>
+            <div className="kpi-content">
+              <span className="kpi-value" id="waste-count">0</span>
+              <span className="kpi-label">Active Energy Waste Cases</span>
+            </div>
+          </div>
+
+          <div 
+            className="kpi-card kpi-green"
+            ref={el => kpiRefs.current[2] = el}
+          >
+            <div className="kpi-icon">
+              <Zap size={24} />
+            </div>
+            <div className="kpi-content">
+              <span className="kpi-value">
+                <span id="energy-count">0</span>
+                <span className="kpi-unit">kWh</span>
+              </span>
+              <span className="kpi-label">Energy Saved Today</span>
+            </div>
+          </div>
+
+          <div 
+            className="kpi-card kpi-orange"
+            ref={el => kpiRefs.current[3] = el}
+          >
+            <div className="kpi-icon">
+              <DollarSign size={24} />
+            </div>
+            <div className="kpi-content">
+              <span className="kpi-value">
+                ₹<span id="cost-count">0</span>
+              </span>
+              <span className="kpi-label">Estimated Cost Saved</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Rooms Grid */}
+      <section className="rooms-section">
+        <h2 className="section-title">Room Status Overview</h2>
         <div className="rooms-grid">
-          {rooms.map((room, index) => (
+          {roomsData.map((room, index) => (
             <div
               key={room.id}
-              ref={el => cardsRef.current[index] = el}
               className="room-card"
-              onClick={() => navigate(`/room/${room.id}`)}
+              ref={el => roomCardsRef.current[index] = el}
+              onMouseEnter={() => handleCardHover(roomCardsRef.current[index], true)}
+              onMouseLeave={() => handleCardHover(roomCardsRef.current[index], false)}
             >
               <div className="room-header">
-                <div>
-                  <h3>{room.name}</h3>
-                  <p className="room-type">{room.type}</p>
+                <div className="room-info">
+                  <h3 className="room-name">{room.name}</h3>
+                  <span className="room-type">{room.type}</span>
                 </div>
-                <div
-                  className="status-badge"
-                  style={{ backgroundColor: `${getStatusColor(room.status)}20`, color: getStatusColor(room.status) }}
-                >
+                <span className={`status-badge ${getStatusColor(room.status)}`}>
                   {getStatusLabel(room.status)}
-                </div>
+                </span>
+              </div>
+
+              <div className="room-monitoring">
+                <span className="monitoring-label">
+                  {getMonitoringIcon(room.monitoringMethod)}
+                  {room.monitoringMethod}
+                </span>
               </div>
 
               <div className="room-details">
-                <div className="detail-row">
-                  <span className="detail-label">Monitoring:</span>
-                  <span className="detail-value">{room.monitoringMethod}</span>
+                <div className="detail-item">
+                  <Users size={16} />
+                  <span>{room.occupancy > 0 ? `${room.occupancy} people` : 'Empty'}</span>
                 </div>
-                <div className="detail-row">
-                  <span className="detail-label">Occupancy:</span>
-                  <span className="detail-value">
-                    {room.occupancy > 0 ? `${room.occupancy} people` : 'Empty'}
-                  </span>
+                <div className="detail-item">
+                  <Zap size={16} />
+                  <span>{room.energyUsageToday} kWh</span>
                 </div>
               </div>
 
-              <div className="appliances-row">
-                <span className="appliances-label">Active:</span>
-                <div className="appliances-icons">
-                  {room.activeAppliances.map((appliance, idx) => (
-                    <span key={idx} className="appliance-icon" title={appliance}>
-                      {getApplianceIcon(appliance)}
-                    </span>
+              <div className="appliances">
+                <span className="appliances-label">Active appliances:</span>
+                <div className="appliances-list">
+                  {Object.entries(room.appliances).map(([key, value]) => (
+                    value.status && (
+                      <span key={key} className="appliance-badge" title={key}>
+                        {getApplianceIcon(key)}
+                      </span>
+                    )
                   ))}
                 </div>
               </div>
 
-              <button className="view-details-btn">
-                View Details <Eye size={16} />
-              </button>
+              <Link to={`/room/${room.id}`} className="view-details-btn">
+                View Details <ArrowRight size={14} />
+              </Link>
             </div>
           ))}
         </div>
-      </div>
+      </section>
     </div>
   );
 };

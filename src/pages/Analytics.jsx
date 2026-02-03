@@ -1,214 +1,315 @@
-import { useEffect, useRef } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { gsap } from 'gsap';
-import { TrendingUp, Leaf, DollarSign, BarChart3 } from 'lucide-react';
-import { analyticsData } from '../data/mockData';
+import {
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  BarElement,
+  Title,
+  Tooltip,
+  Legend,
+  Filler
+} from 'chart.js';
+import { Line, Bar } from 'react-chartjs-2';
+import {
+  TrendingUp,
+  Leaf,
+  DollarSign,
+  Zap,
+  Info
+} from 'lucide-react';
+import { energyAnalytics, dashboardKPIs } from '../data/mockData';
+
+// Register ChartJS components
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  BarElement,
+  Title,
+  Tooltip,
+  Legend,
+  Filler
+);
 
 const Analytics = () => {
-  const kpiRef = useRef([]);
-  const chartsRef = useRef([]);
+  const kpiRefs = useRef([]);
+  const chartRefs = useRef([]);
+  const pageRef = useRef(null);
+
+  // Theme-aware colors
+  const chartColors = {
+    primary: '#0ea5e9',
+    success: '#10b981',
+    warning: '#f97316',
+    danger: '#ef4444',
+    text: '#1f2937',
+    textMuted: '#6b7280',
+    border: '#e5e7eb'
+  };
 
   const kpis = [
     {
       label: 'Total Energy Saved',
-      value: analyticsData.kpis.totalEnergySaved,
+      value: dashboardKPIs.energySavedToday,
       unit: 'kWh',
       icon: TrendingUp,
       color: '#10b981'
     },
     {
-      label: 'Estimated CO₂ Reduction',
-      value: analyticsData.kpis.co2Reduction,
+      label: 'Estimated Cost Saved',
+      value: dashboardKPIs.estimatedCostSaved,
+      prefix: '₹',
+      icon: DollarSign,
+      color: '#0ea5e9'
+    },
+    {
+      label: 'CO₂ Reduction',
+      value: dashboardKPIs.co2Reduced,
       unit: 'kg',
       icon: Leaf,
       color: '#059669'
     },
     {
-      label: 'Estimated Cost Savings',
-      value: analyticsData.kpis.costSavings,
-      prefix: '$',
-      icon: DollarSign,
-      color: '#0ea5e9'
+      label: 'Energy Waste Detected',
+      value: dashboardKPIs.activeWasteCases,
+      unit: 'cases',
+      icon: Zap,
+      color: '#f97316'
     }
   ];
 
   useEffect(() => {
-    const delay = setTimeout(() => {
-      const kpiElements = kpiRef.current.filter(Boolean);
-      const chartElements = chartsRef.current.filter(Boolean);
-      
-      if (kpiElements.length === 0 && chartElements.length === 0) return;
+    // Page animation
+    gsap.fromTo(pageRef.current,
+      { opacity: 0 },
+      { opacity: 1, duration: 0.4, ease: 'power2.out' }
+    );
 
-      const ctx = gsap.context(() => {
-        if (kpiElements.length > 0) {
-          gsap.from(kpiElements, {
-            y: 30,
-            opacity: 0,
-            duration: 0.6,
-            stagger: 0.1,
-            ease: 'power3.out'
-          });
+    // KPI cards animation
+    kpiRefs.current.forEach((ref, index) => {
+      if (ref) {
+        gsap.fromTo(ref,
+          { opacity: 0, y: 30, scale: 0.95 },
+          { opacity: 1, y: 0, scale: 1, duration: 0.5, delay: index * 0.1, ease: 'power2.out' }
+        );
 
-          kpiRef.current.forEach((el, index) => {
-            if (el) {
-              const valueElement = el.querySelector('.kpi-value');
-              const targetValue = kpis[index].value;
-              const obj = { value: 0 };
-
-              gsap.to(obj, {
-                value: targetValue,
-                duration: 2,
-                delay: 0.3 + index * 0.1,
-                ease: 'power2.out',
-                onUpdate: () => {
-                  if (valueElement) valueElement.textContent = Math.round(obj.value);
-                }
-              });
+        // Animate numbers
+        const valueElement = ref.querySelector('.kpi-value');
+        if (valueElement) {
+          const finalValue = parseFloat(kpis[index].value);
+          gsap.to(
+            { val: 0 },
+            {
+              val: finalValue,
+              duration: 1.5,
+              delay: index * 0.1 + 0.2,
+              ease: 'power2.out',
+              onUpdate: function() {
+                valueElement.textContent = this.targets()[0].val.toFixed(
+                  typeof finalValue === 'number' && finalValue % 1 !== 0 ? 1 : 0
+                );
+              }
             }
-          });
+          );
         }
+      }
+    });
 
-        if (chartElements.length > 0) {
-          gsap.from(chartElements, {
-            y: 50,
-            opacity: 0,
-            duration: 0.8,
-            stagger: 0.2,
-            delay: 0.4,
-            ease: 'power3.out'
-          });
+    // Charts animation
+    chartRefs.current.forEach((ref, index) => {
+      if (ref) {
+        gsap.fromTo(ref,
+          { opacity: 0, y: 40 },
+          { opacity: 1, y: 0, duration: 0.5, delay: 0.3 + index * 0.1, ease: 'power2.out' }
+        );
+      }
+    });
+  }, []);
+
+  const lineChartData = {
+    labels: energyAnalytics.energySavedOverTime.labels,
+    datasets: [
+      {
+        label: 'Energy Saved (kWh)',
+        data: energyAnalytics.energySavedOverTime.data,
+        borderColor: chartColors.success,
+        backgroundColor: `${chartColors.success}15`,
+        borderWidth: 3,
+        fill: true,
+        tension: 0.4,
+        pointRadius: 6,
+        pointBackgroundColor: chartColors.success,
+        pointBorderColor: '#fff',
+        pointBorderWidth: 2,
+        pointHoverRadius: 8,
+        filler: {
+          above: `${chartColors.success}15`
         }
-      });
+      }
+    ]
+  };
 
-      return () => ctx.revert();
-    }, 50);
+  const barChartData = {
+    labels: energyAnalytics.wasteByRoom.labels,
+    datasets: [
+      {
+        label: 'Energy Waste (kWh)',
+        data: energyAnalytics.wasteByRoom.data,
+        backgroundColor: [
+          chartColors.danger,
+          `${chartColors.danger}dd`,
+          `${chartColors.danger}bb`,
+          `${chartColors.danger}99`,
+          `${chartColors.danger}77`
+        ],
+        borderRadius: 8,
+        borderSkipped: false
+      }
+    ]
+  };
 
-    return () => clearTimeout(delay);
-  }, [kpis.length]);
-
-  const maxEnergy = Math.max(...analyticsData.energySavedOverTime.map(d => d.energy));
-  const maxWaste = Math.max(...analyticsData.wasteByRoom.map(d => d.waste));
+  const chartOptions = {
+    responsive: true,
+    maintainAspectRatio: true,
+    plugins: {
+      legend: {
+        display: true,
+        labels: {
+          color: chartColors.text,
+          font: { size: 12, weight: '500' },
+          boxWidth: 12,
+          padding: 15,
+          usePointStyle: true
+        }
+      },
+      tooltip: {
+        backgroundColor: `${chartColors.text}dd`,
+        titleColor: '#fff',
+        bodyColor: '#fff',
+        borderColor: chartColors.border,
+        borderWidth: 1,
+        padding: 12,
+        displayColors: true,
+        cornerRadius: 8
+      }
+    },
+    scales: {
+      y: {
+        beginAtZero: true,
+        grid: {
+          color: chartColors.border,
+          drawBorder: false
+        },
+        ticks: {
+          color: chartColors.textMuted,
+          font: { size: 12 }
+        }
+      },
+      x: {
+        grid: {
+          display: false,
+          drawBorder: false
+        },
+        ticks: {
+          color: chartColors.textMuted,
+          font: { size: 12 }
+        }
+      }
+    }
+  };
 
   return (
-    <div className="analytics-container">
-      <div className="analytics-header">
-        <h1>Energy Analytics</h1>
-        <div className="analytics-note">
-          <BarChart3 size={18} />
-          <span>Values are estimated using standard appliance wattage assumptions</span>
-        </div>
+    <div className="analytics-page" ref={pageRef}>
+      <div className="page-header">
+        <h1>
+          <TrendingUp size={28} />
+          Energy Analytics
+        </h1>
+        <p className="header-description">
+          Real-time insights into campus energy usage and savings
+        </p>
       </div>
 
+      {/* KPI Grid */}
       <div className="kpi-grid">
         {kpis.map((kpi, index) => {
           const Icon = kpi.icon;
           return (
             <div
               key={index}
-              ref={el => kpiRef.current[index] = el}
               className="kpi-card"
+              ref={el => kpiRefs.current[index] = el}
             >
-              <div className="kpi-icon" style={{ backgroundColor: `${kpi.color}20`, color: kpi.color }}>
+              <div className="kpi-icon" style={{ background: `${kpi.color}15`, color: kpi.color }}>
                 <Icon size={24} />
               </div>
               <div className="kpi-content">
-                <div className="kpi-value-wrapper">
+                <span className="kpi-value">
                   {kpi.prefix && <span className="kpi-prefix">{kpi.prefix}</span>}
-                  <span className="kpi-value">{kpi.value}</span>
+                  <span className="kpi-number">0</span>
                   {kpi.unit && <span className="kpi-unit">{kpi.unit}</span>}
-                </div>
-                <div className="kpi-label">{kpi.label}</div>
+                </span>
+                <span className="kpi-label">{kpi.label}</span>
               </div>
             </div>
           );
         })}
       </div>
 
+      {/* Charts Grid */}
       <div className="charts-grid">
-        <div ref={el => chartsRef.current[0] = el} className="chart-card">
-          <h2>Energy Saved Over Time</h2>
-          <div className="chart-container">
-            <div className="line-chart">
-              <div className="chart-y-axis">
-                <span>{maxEnergy}</span>
-                <span>{Math.round(maxEnergy / 2)}</span>
-                <span>0 kWh</span>
-              </div>
-              <div className="chart-area">
-                <svg viewBox="0 0 400 200" className="line-chart-svg">
-                  <defs>
-                    <linearGradient id="lineGradient" x1="0%" y1="0%" x2="0%" y2="100%">
-                      <stop offset="0%" stopColor="#10b981" stopOpacity="0.3" />
-                      <stop offset="100%" stopColor="#10b981" stopOpacity="0.05" />
-                    </linearGradient>
-                  </defs>
-                  <path
-                    d={analyticsData.energySavedOverTime.map((d, i) => {
-                      const x = (i / (analyticsData.energySavedOverTime.length - 1)) * 380 + 10;
-                      const y = 180 - (d.energy / maxEnergy) * 160;
-                      return `${i === 0 ? 'M' : 'L'} ${x} ${y}`;
-                    }).join(' ')}
-                    fill="none"
-                    stroke="#10b981"
-                    strokeWidth="3"
-                    strokeLinecap="round"
-                  />
-                  <path
-                    d={analyticsData.energySavedOverTime.map((d, i) => {
-                      const x = (i / (analyticsData.energySavedOverTime.length - 1)) * 380 + 10;
-                      const y = 180 - (d.energy / maxEnergy) * 160;
-                      return `${i === 0 ? 'M' : 'L'} ${x} ${y}`;
-                    }).join(' ') + ' L 390 180 L 10 180 Z'}
-                    fill="url(#lineGradient)"
-                  />
-                  {analyticsData.energySavedOverTime.map((d, i) => {
-                    const x = (i / (analyticsData.energySavedOverTime.length - 1)) * 380 + 10;
-                    const y = 180 - (d.energy / maxEnergy) * 160;
-                    return (
-                      <circle
-                        key={i}
-                        cx={x}
-                        cy={y}
-                        r="4"
-                        fill="#10b981"
-                        stroke="#fff"
-                        strokeWidth="2"
-                      />
-                    );
-                  })}
-                </svg>
-                <div className="chart-x-axis">
-                  {analyticsData.energySavedOverTime.map((d, i) => (
-                    <span key={i}>{d.date}</span>
-                  ))}
-                </div>
-              </div>
-            </div>
+        <div className="chart-card" ref={el => chartRefs.current[0] = el}>
+          <h2 className="chart-title">Energy Saved Over Time</h2>
+          <p className="chart-description">Weekly trend of energy saved across campus</p>
+          <div className="chart-wrapper">
+            <Line data={lineChartData} options={chartOptions} />
           </div>
         </div>
 
-        <div ref={el => chartsRef.current[1] = el} className="chart-card">
-          <h2>Energy Waste by Room</h2>
-          <div className="chart-container">
-            <div className="bar-chart">
-              {analyticsData.wasteByRoom.map((d, i) => (
-                <div key={i} className="bar-item">
-                  <div className="bar-container">
-                    <div
-                      className="bar"
-                      style={{
-                        height: `${(d.waste / maxWaste) * 100}%`,
-                        backgroundColor: '#f59e0b'
-                      }}
-                    >
-                      <span className="bar-value">{d.waste} kWh</span>
-                    </div>
-                  </div>
-                  <span className="bar-label">{d.room}</span>
-                </div>
-              ))}
-            </div>
+        <div className="chart-card" ref={el => chartRefs.current[1] = el}>
+          <h2 className="chart-title">Energy Waste by Room</h2>
+          <p className="chart-description">Top rooms with detected energy waste</p>
+          <div className="chart-wrapper">
+            <Bar data={barChartData} options={chartOptions} />
           </div>
         </div>
+      </div>
+
+      {/* Monthly Trend */}
+      <div className="chart-card wide" ref={el => chartRefs.current[2] = el}>
+        <h2 className="chart-title">Monthly Trend</h2>
+        <p className="chart-description">Cumulative energy savings by week</p>
+        <div className="chart-wrapper">
+          <Bar
+            data={{
+              labels: energyAnalytics.monthlyTrend.labels,
+              datasets: [
+                {
+                  label: 'Cumulative Savings (kWh)',
+                  data: energyAnalytics.monthlyTrend.data,
+                  backgroundColor: chartColors.primary,
+                  borderRadius: 8,
+                  borderSkipped: false
+                }
+              ]
+            }}
+            options={chartOptions}
+          />
+        </div>
+      </div>
+
+      {/* Disclaimer */}
+      <div className="analytics-disclaimer">
+        <Info size={18} />
+        <p>
+          Values are estimated using standard appliance wattage assumptions.
+          Actual savings may vary based on real-world conditions.
+          CO₂ calculations use average grid emission factors.
+        </p>
       </div>
     </div>
   );

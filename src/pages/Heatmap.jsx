@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { gsap } from 'gsap';
-import { Thermometer, Calendar, Zap, Users, Activity } from 'lucide-react';
+import { Thermometer, Calendar, Zap, Users } from 'lucide-react';
 import { roomsData } from '../data/mockData';
 
 const Heatmap = () => {
@@ -46,20 +46,18 @@ const Heatmap = () => {
   };
 
   return (
-    <div className="heatmap-page" ref={pageRef}>
-      <div className="page-header">
-        <h1>
-          <Thermometer size={28} />
-          Energy Heatmap
-        </h1>
-        <p className="header-description">
-          Visual map of energy efficiency across all monitored spaces
-        </p>
-      </div>
-
-      {/* Time Filter */}
-      <div className="heatmap-controls">
-        <div className="filter-group">
+    <div className="heatmap-container" ref={pageRef}>
+      <div className="heatmap-header">
+        <div>
+          <h1>
+            <Thermometer size={28} />
+            Energy Heatmap
+          </h1>
+          <p className="heatmap-description">
+            Visual map of energy efficiency across all monitored spaces
+          </p>
+        </div>
+        <div className="time-filter">
           <Calendar size={16} />
           <button
             className={`filter-btn ${timeFilter === 'today' ? 'active' : ''}`}
@@ -78,92 +76,75 @@ const Heatmap = () => {
 
       {/* Legend */}
       <div className="heatmap-legend">
-        <div className="legend-item">
-          <div className="legend-color" style={{ backgroundColor: '#10b981' }}></div>
-          <span>Efficient</span>
-        </div>
-        <div className="legend-item">
-          <div className="legend-color" style={{ backgroundColor: '#f59e0b' }}></div>
-          <span>Review Needed</span>
-        </div>
-        <div className="legend-item">
-          <div className="legend-color" style={{ backgroundColor: '#ef4444' }}></div>
-          <span>High Waste</span>
+        <h3>Legend</h3>
+        <div className="legend-items">
+          <div className="legend-item">
+            <div className="legend-color" style={{ backgroundColor: '#10b981' }}></div>
+            <span>Efficient</span>
+          </div>
+          <div className="legend-item">
+            <div className="legend-color" style={{ backgroundColor: '#f59e0b' }}></div>
+            <span>Review Needed</span>
+          </div>
+          <div className="legend-item">
+            <div className="legend-color" style={{ backgroundColor: '#ef4444' }}></div>
+            <span>High Waste</span>
+          </div>
         </div>
       </div>
 
       {/* Heatmap Grid */}
-      <div className="heatmap-grid-container">
-        <div className="heatmap-grid">
-          {roomsData.map((room, index) => {
-            const efficiency = getEfficiencyStatus(room);
-            return (
-              <div
-                key={room.id}
-                ref={el => cellRefs.current[index] = el}
-                className="heatmap-cell"
-                style={{ backgroundColor: efficiency.color }}
-                onClick={() => navigate(`/room/${room.id}`)}
-                title={`${room.name} - ${efficiency.label}`}
-              >
-                <div className="cell-inner">
-                  <div className="cell-name">{room.name}</div>
-                  <div className="cell-status">{efficiency.label}</div>
-                  <div className="cell-meta">
-                    <span className="meta-item">
-                      <Zap size={12} />
-                      {room.energyUsageToday.toFixed(1)}kWh
-                    </span>
-                    {room.occupancy > 0 && (
-                      <span className="meta-item">
-                        <Users size={12} />
-                        {room.occupancy}
-                      </span>
-                    )}
-                  </div>
-                  {room.occupancy === 0 && efficiency.status === 'waste' && (
-                    <div className="cell-alert">Empty</div>
-                  )}
-                </div>
+      <div className="heatmap-grid">
+        {roomsData.map((room, index) => {
+          const efficiency = getEfficiencyStatus(room);
+          return (
+            <div
+              key={room.id}
+              ref={el => cellRefs.current[index] = el}
+              className="heatmap-cell"
+              style={{ backgroundColor: efficiency.color }}
+              onClick={() => navigate(`/room/${room.id}`)}
+              title={`${room.name} - ${efficiency.label}`}
+            >
+              <div className="cell-content">
+                <span className="cell-name">{room.name}</span>
+                <span className="cell-status">{efficiency.label}</span>
+                <span className="cell-occupancy">
+                  <Zap size={12} /> {room.energyUsageToday.toFixed(1)} kWh
+                </span>
+                {room.occupancy > 0 && (
+                  <span className="cell-occupancy">
+                    <Users size={12} /> {room.occupancy} people
+                  </span>
+                )}
+                {room.occupancy === 0 && efficiency.status === 'waste' && (
+                  <span className="cell-warning">Empty</span>
+                )}
               </div>
-            );
-          })}
-        </div>
+            </div>
+          );
+        })}
       </div>
 
       {/* Statistics Summary */}
-      <div className="heatmap-stats">
-        <div className="stat-card stat-green">
-          <Activity size={24} />
-          <div className="stat-content">
-            <div className="stat-value">{stats.efficient}</div>
-            <div className="stat-label">Efficient Rooms</div>
+      <div className="heatmap-summary">
+        <div className="summary-card">
+          <h3>Summary</h3>
+          <div className="summary-stats">
+            <div className="summary-stat">
+              <div className="summary-stat-value" style={{ color: '#10b981' }}>{stats.efficient}</div>
+              <div className="summary-stat-label">Efficient Rooms</div>
+            </div>
+            <div className="summary-stat">
+              <div className="summary-stat-value" style={{ color: '#f59e0b' }}>{stats.review}</div>
+              <div className="summary-stat-label">Need Review</div>
+            </div>
+            <div className="summary-stat">
+              <div className="summary-stat-value" style={{ color: '#ef4444' }}>{stats.waste}</div>
+              <div className="summary-stat-label">High Waste</div>
+            </div>
           </div>
         </div>
-        <div className="stat-card stat-yellow">
-          <Activity size={24} />
-          <div className="stat-content">
-            <div className="stat-value">{stats.review}</div>
-            <div className="stat-label">Need Review</div>
-          </div>
-        </div>
-        <div className="stat-card stat-red">
-          <Activity size={24} />
-          <div className="stat-content">
-            <div className="stat-value">{stats.waste}</div>
-            <div className="stat-label">High Waste</div>
-          </div>
-        </div>
-      </div>
-
-      {/* Info */}
-      <div className="heatmap-info">
-        <h3>About Energy Heatmap</h3>
-        <p>
-          Click any room to view detailed energy data and monitoring information. Rooms are color-coded
-          based on current energy efficiency. Green indicates efficient operation, yellow shows rooms
-          that need attention, and red flags areas with significant waste (empty rooms consuming energy).
-        </p>
       </div>
     </div>
   );

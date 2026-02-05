@@ -4,7 +4,6 @@ import {
   Settings,
   Clock,
   Power,
-  Bell,
   Zap,
   Save,
   RotateCcw,
@@ -17,13 +16,13 @@ import { defaultRules } from '../data/mockData';
 
 const Rules = () => {
   const [rules, setRules] = useState(defaultRules);
-  const [units, setUnits] = useState({
+  const [saved, setSaved] = useState(false);
+  const [timeUnits, setTimeUnits] = useState({
     emptyRoomThreshold: 'minutes',
     lightOffDelay: 'minutes',
     acOffDelay: 'minutes',
     scheduleBuffer: 'minutes'
   });
-  const [saved, setSaved] = useState(false);
   const pageRef = useRef(null);
   const cardsRef = useRef([]);
 
@@ -94,220 +93,253 @@ const Rules = () => {
   };
 
   return (
-    <div className="rules-page" ref={pageRef}>
-      <div className="page-header">
-        <h1>
-          <Settings size={28} />
-          Configuration & Rules
-        </h1>
-        <p className="header-description">
-          Customize automation rules and system behavior
-        </p>
-      </div>
-
-      {/* Explanation Section */}
-      <div className="explanation-card" ref={el => cardsRef.current[0] = el}>
-        <div className="explanation-icon">
-          <Info size={24} />
-        </div>
-        <div className="explanation-content">
-          <h3>How Rules Work</h3>
-          <p>
-            These configurable rules determine how Watt-Watch responds to energy waste scenarios.
-            Adjust thresholds and modes based on your campus operational requirements.
-            All changes are simulated for this prototype.
+    <div className="configuration-container" ref={pageRef}>
+      <div className="configuration-header">
+        <div>
+          <h1>
+            <Settings size={28} />
+            Configuration & Rules
+          </h1>
+          <p className="config-description">
+            Customize automation rules and system behavior
           </p>
         </div>
+        <div className="config-info">
+          <Info size={16} />
+          All changes are simulated for this prototype.
+        </div>
       </div>
 
-      {/* Rules Grid */}
-      <div className="rules-grid">
-        {/* Time-Based Thresholds */}
-        <div className="rule-section" ref={el => cardsRef.current[1] = el}>
-          <div className="section-header">
-            <Clock size={24} />
+      <div className="config-grid">
+        <div className="config-card" ref={el => cardsRef.current[0] = el}>
+          <div className="config-card-header">
+            <div className="config-icon" style={{ background: '#e0f2fe', color: '#0284c7' }}>
+              <Clock size={20} />
+            </div>
             <h2>Time-Based Thresholds</h2>
           </div>
-          
-          <div className="rule-item">
-            <div className="rule-label">
-              <span className="rule-name">Empty Room Detection</span>
-              <span className="rule-unit">{rules.emptyRoomThreshold} minutes</span>
-            </div>
+          <p className="config-description-text">Adjust how long the system waits before acting on inactivity.</p>
+
+          <label className="toggle-label">Empty Room Detection</label>
+          <div style={{ display: 'flex', gap: '12px', alignItems: 'center', marginBottom: '12px' }}>
             <input
               type="range"
               min="5"
               max="120"
               value={rules.emptyRoomThreshold}
               onChange={(e) => handleChange('emptyRoomThreshold', e.target.value)}
-              className="rule-slider"
+              className="threshold-slider"
+              style={{ flex: 1 }}
             />
-            <p className="rule-description">
-              Time to wait after room becomes empty before triggering action
-            </p>
+            <select
+              value={timeUnits.emptyRoomThreshold}
+              onChange={(e) => setTimeUnits({...timeUnits, emptyRoomThreshold: e.target.value})}
+              className="time-unit-select"
+              style={{ padding: '8px', borderRadius: '6px', border: '1px solid #e2e8f0', fontSize: '12px', minWidth: '90px' }}
+            >
+              <option value="seconds">Seconds</option>
+              <option value="minutes">Minutes</option>
+            </select>
+          </div>
+          <div className="threshold-display">
+            <span className="threshold-value">{rules.emptyRoomThreshold}</span>
+            <span className="threshold-unit">{timeUnits.emptyRoomThreshold}</span>
+          </div>
+          <div className="config-helper">
+            Time to wait after room becomes empty before triggering action.
           </div>
 
-          <div className="rule-item">
-            <div className="rule-label">
-              <span className="rule-name">Light Auto-Off Delay</span>
-              <span className="rule-unit">{rules.lightOffDelay} minutes</span>
-            </div>
+          <label className="toggle-label">Light Auto-Off Delay</label>
+          <div style={{ display: 'flex', gap: '12px', alignItems: 'center', marginBottom: '12px' }}>
             <input
               type="range"
               min="5"
               max="60"
               value={rules.lightOffDelay}
               onChange={(e) => handleChange('lightOffDelay', e.target.value)}
-              className="rule-slider"
+              className="threshold-slider"
+              style={{ flex: 1 }}
             />
-            <p className="rule-description">
-              Minutes after occupancy detection before lights are turned off
-            </p>
+            <select
+              value={timeUnits.lightOffDelay}
+              onChange={(e) => setTimeUnits({...timeUnits, lightOffDelay: e.target.value})}
+              className="time-unit-select"
+              style={{ padding: '8px', borderRadius: '6px', border: '1px solid #e2e8f0', fontSize: '12px', minWidth: '90px' }}
+            >
+              <option value="seconds">Seconds</option>
+              <option value="minutes">Minutes</option>
+            </select>
+          </div>
+          <div className="threshold-display">
+            <span className="threshold-value">{rules.lightOffDelay}</span>
+            <span className="threshold-unit">{timeUnits.lightOffDelay}</span>
+          </div>
+          <div className="config-helper">
+            Minutes after occupancy detection before lights are turned off.
           </div>
 
-          <div className="rule-item">
-            <div className="rule-label">
-              <span className="rule-name">AC Auto-Off Delay</span>
-              <span className="rule-unit">{rules.acOffDelay} minutes</span>
-            </div>
+          <label className="toggle-label">AC Auto-Off Delay</label>
+          <div style={{ display: 'flex', gap: '12px', alignItems: 'center', marginBottom: '12px' }}>
             <input
               type="range"
               min="5"
               max="90"
               value={rules.acOffDelay}
               onChange={(e) => handleChange('acOffDelay', e.target.value)}
-              className="rule-slider"
+              className="threshold-slider"
+              style={{ flex: 1 }}
             />
-            <p className="rule-description">
-              Minutes after occupancy detection before AC is turned off
-            </p>
+            <select
+              value={timeUnits.acOffDelay}
+              onChange={(e) => setTimeUnits({...timeUnits, acOffDelay: e.target.value})}
+              className="time-unit-select"
+              style={{ padding: '8px', borderRadius: '6px', border: '1px solid #e2e8f0', fontSize: '12px', minWidth: '90px' }}
+            >
+              <option value="seconds">Seconds</option>
+              <option value="minutes">Minutes</option>
+            </select>
+          </div>
+          <div className="threshold-display">
+            <span className="threshold-value">{rules.acOffDelay}</span>
+            <span className="threshold-unit">{timeUnits.acOffDelay}</span>
+          </div>
+          <div className="config-helper">
+            Minutes after occupancy detection before AC is turned off.
           </div>
         </div>
 
-        {/* Automation Modes */}
-        <div className="rule-section" ref={el => cardsRef.current[2] = el}>
-          <div className="section-header">
-            <Power size={24} />
+        <div className="config-card" ref={el => cardsRef.current[1] = el}>
+          <div className="config-card-header">
+            <div className="config-icon" style={{ background: '#fef3c7', color: '#92400e' }}>
+              <Power size={20} />
+            </div>
             <h2>Automation Modes</h2>
           </div>
-
-          <div className="rule-toggle-item">
-            <div className="toggle-content">
-              <h3>Auto Action Mode</h3>
-              <p>Automatically cut power when waste is detected</p>
-            </div>
+          <p className="config-description-text">Control whether the system acts automatically or requires approval.</p>
+          <div className="config-control">
+            <span className="toggle-label">Auto Action Mode</span>
             <button
-              className={`toggle-switch ${rules.autoActionMode === 'auto' ? 'active' : ''}`}
+              className={`toggle-button ${rules.autoActionMode === 'auto' ? 'toggle-on' : 'toggle-off'}`}
               onClick={() => handleChange('autoActionMode', rules.autoActionMode === 'auto' ? 'manual' : 'auto')}
             >
-              {rules.autoActionMode === 'auto' ? <ToggleRight size={24} /> : <ToggleLeft size={24} />}
+              {rules.autoActionMode === 'auto' ? <ToggleRight size={18} /> : <ToggleLeft size={18} />}
+              {rules.autoActionMode === 'auto' ? 'AUTO' : 'MANUAL'}
             </button>
           </div>
         </div>
 
-        {/* Computer Lab Settings */}
-        <div className="rule-section" ref={el => cardsRef.current[3] = el}>
-          <div className="section-header">
-            <Zap size={24} />
+        <div className="config-card" ref={el => cardsRef.current[2] = el}>
+          <div className="config-card-header">
+            <div className="config-icon" style={{ background: '#dcfce7', color: '#166534' }}>
+              <Zap size={20} />
+            </div>
             <h2>Computer Lab Intelligence</h2>
           </div>
+          <p className="config-description-text">Detect hidden waste and keep labs efficient.</p>
 
-          <div className="rule-toggle-item">
-            <div className="toggle-content">
-              <h3>Hidden Waste Detection</h3>
-              <p>Monitor for CPUs active when monitors are OFF</p>
-            </div>
+          <div className="config-control">
+            <span className="toggle-label">Hidden Waste Detection</span>
             <button
-              className={`toggle-switch ${rules.computerLabSettings.hiddenWasteThreshold > 0 ? 'active' : ''}`}
-              onClick={() => handleNestedChange('computerLabSettings', 'hiddenWasteThreshold', 
-                rules.computerLabSettings.hiddenWasteThreshold > 0 ? 0 : 10)}
+              className={`toggle-button ${rules.computerLabSettings.hiddenWasteThreshold > 0 ? 'toggle-on' : 'toggle-off'}`}
+              onClick={() => handleNestedChange('computerLabSettings', 'hiddenWasteThreshold', rules.computerLabSettings.hiddenWasteThreshold > 0 ? 0 : 10)}
             >
-              {rules.computerLabSettings.hiddenWasteThreshold > 0 ? <ToggleRight size={24} /> : <ToggleLeft size={24} />}
+              {rules.computerLabSettings.hiddenWasteThreshold > 0 ? <ToggleRight size={18} /> : <ToggleLeft size={18} />}
+              {rules.computerLabSettings.hiddenWasteThreshold > 0 ? 'ON' : 'OFF'}
             </button>
           </div>
 
-          <div className="rule-toggle-item">
-            <div className="toggle-content">
-              <h3>CPU Activity Monitoring</h3>
-              <p>Track processor load and idle time</p>
-            </div>
+          <div className="config-control">
+            <span className="toggle-label">CPU Activity Monitoring</span>
             <button
-              className={`toggle-switch ${rules.computerLabSettings.cpuActivityMonitoring ? 'active' : ''}`}
+              className={`toggle-button ${rules.computerLabSettings.cpuActivityMonitoring ? 'toggle-on' : 'toggle-off'}`}
               onClick={() => handleNestedToggle('computerLabSettings', 'cpuActivityMonitoring')}
             >
-              {rules.computerLabSettings.cpuActivityMonitoring ? <ToggleRight size={24} /> : <ToggleLeft size={24} />}
+              {rules.computerLabSettings.cpuActivityMonitoring ? <ToggleRight size={18} /> : <ToggleLeft size={18} />}
+              {rules.computerLabSettings.cpuActivityMonitoring ? 'ON' : 'OFF'}
             </button>
           </div>
 
-          <div className="rule-toggle-item">
-            <div className="toggle-content">
-              <h3>Monitor OFF Alert</h3>
-              <p>Alert when monitors are off but CPUs active</p>
-            </div>
+          <div className="config-control">
+            <span className="toggle-label">Monitor OFF Alert</span>
             <button
-              className={`toggle-switch ${rules.computerLabSettings.monitorOffAlert ? 'active' : ''}`}
+              className={`toggle-button ${rules.computerLabSettings.monitorOffAlert ? 'toggle-on' : 'toggle-off'}`}
               onClick={() => handleNestedToggle('computerLabSettings', 'monitorOffAlert')}
             >
-              {rules.computerLabSettings.monitorOffAlert ? <ToggleRight size={24} /> : <ToggleLeft size={24} />}
+              {rules.computerLabSettings.monitorOffAlert ? <ToggleRight size={18} /> : <ToggleLeft size={18} />}
+              {rules.computerLabSettings.monitorOffAlert ? 'ON' : 'OFF'}
             </button>
           </div>
         </div>
 
-        {/* Schedule Settings */}
-        <div className="rule-section" ref={el => cardsRef.current[4] = el}>
-          <div className="section-header">
-            <Clock size={24} />
+        <div className="config-card" ref={el => cardsRef.current[3] = el}>
+          <div className="config-card-header">
+            <div className="config-icon" style={{ background: '#e2e8f0', color: '#475569' }}>
+              <Clock size={20} />
+            </div>
             <h2>Schedule Buffer</h2>
           </div>
-
-          <div className="rule-item">
-            <div className="rule-label">
-              <span className="rule-name">Buffer Before Off Hours</span>
-              <span className="rule-unit">{rules.scheduleBuffer} minutes</span>
-            </div>
+          <p className="config-description-text">Prepare for scheduled shutdowns.</p>
+          <label className="toggle-label">Buffer Before Off Hours</label>
+          <div style={{ display: 'flex', gap: '12px', alignItems: 'center', marginBottom: '12px' }}>
             <input
               type="range"
               min="0"
               max="60"
               value={rules.scheduleBuffer}
               onChange={(e) => handleChange('scheduleBuffer', e.target.value)}
-              className="rule-slider"
+              className="threshold-slider"
+              style={{ flex: 1 }}
             />
-            <p className="rule-description">
-              Minutes before scheduled off-time to prepare for shutdown
-            </p>
+            <select
+              value={timeUnits.scheduleBuffer}
+              onChange={(e) => setTimeUnits({...timeUnits, scheduleBuffer: e.target.value})}
+              className="time-unit-select"
+              style={{ padding: '8px', borderRadius: '6px', border: '1px solid #e2e8f0', fontSize: '12px', minWidth: '90px' }}
+            >
+              <option value="seconds">Seconds</option>
+              <option value="minutes">Minutes</option>
+            </select>
+          </div>
+          <div className="threshold-display">
+            <span className="threshold-value">{rules.scheduleBuffer}</span>
+            <span className="threshold-unit">{timeUnits.scheduleBuffer}</span>
+          </div>
+          <div className="config-helper">
+            Minutes before scheduled off-time to prepare for shutdown.
           </div>
         </div>
       </div>
 
-      {/* Action Buttons */}
-      <div className="rules-actions" ref={el => cardsRef.current[5] = el}>
-        <button className="btn btn-primary" onClick={handleSave}>
-          <Save size={18} />
-          Save Rules
-        </button>
-        <button className="btn btn-secondary" onClick={handleReset}>
-          <RotateCcw size={18} />
-          Reset to Default
-        </button>
-        {saved && (
-          <div className="save-confirmation">
-            <CheckCircle size={18} />
-            <span>Rules saved successfully</span>
-          </div>
-        )}
+      <div className="config-footer" ref={el => cardsRef.current[4] = el}>
+        <div className="config-control">
+          <button className="btn btn-primary" onClick={handleSave}>
+            <Save size={18} />
+            Save Rules
+          </button>
+          <button className="btn btn-secondary" onClick={handleReset}>
+            <RotateCcw size={18} />
+            Reset to Default
+          </button>
+          {saved && (
+            <div className="save-confirmation">
+              <CheckCircle size={18} />
+              <span>Rules saved successfully</span>
+            </div>
+          )}
+        </div>
       </div>
 
-      {/* Info Card */}
-      <div className="rules-info" ref={el => cardsRef.current[6] = el}>
-        <Info size={20} />
-        <div>
-          <h3>Pro Tip</h3>
-          <p>
-            Different room types may benefit from different rule configurations.
-            Computer labs might need more aggressive hidden waste detection,
-            while offices could use schedule-based automation.
-          </p>
+      <div className="config-footer" ref={el => cardsRef.current[5] = el}>
+        <div className="config-note">
+          <Info size={20} />
+          <div>
+            <h3>Pro Tip</h3>
+            <p>
+              Different room types may benefit from different rule configurations.
+              Computer labs might need more aggressive hidden waste detection,
+              while offices could use schedule-based automation.
+            </p>
+          </div>
         </div>
       </div>
     </div>

@@ -6,7 +6,6 @@ import {
   Radio,
   CheckCircle,
   Eye,
-  EyeOff,
   Lock,
   Server,
   UserX,
@@ -37,201 +36,146 @@ const Privacy = () => {
   }, []);
 
   return (
-    <div className="privacy-page" ref={pageRef}>
-      <div className="page-header">
-        <h1>
-          <Shield size={28} />
-          Privacy & Compliance
-        </h1>
-        <p className="header-description">
+    <div className="privacy-container" ref={pageRef}>
+      <div className="privacy-header">
+        <div className="privacy-header-icon">
+          <Shield size={36} />
+        </div>
+        <h1>Privacy & Compliance</h1>
+        <p className="privacy-subtitle">
           Understanding how Watt-Watch protects privacy while monitoring energy usage
         </p>
       </div>
 
-      {/* Privacy Principles */}
-      <div className="privacy-principles" ref={el => sectionsRef.current[0] = el}>
-        <h2>Our Privacy Principles</h2>
-        <div className="principles-grid">
-          <div className="principle-card">
-            <div className="principle-icon">
-              <Server size={24} />
-            </div>
-            <h4>Local Processing</h4>
-            <p>All video analysis happens on edge devices. No raw footage leaves the room.</p>
+      <div className="privacy-grid" ref={el => sectionsRef.current[0] = el}>
+        <div className="privacy-card">
+          <div className="privacy-card-header">
+            <Server size={20} />
+            <h2>Local Processing</h2>
           </div>
-          <div className="principle-card">
-            <div className="principle-icon">
-              <UserX size={24} />
-            </div>
-            <h4>No Individual Tracking</h4>
-            <p>System counts occupancy only. No facial recognition or person identification.</p>
+          <p className="card-description">All video analysis happens on edge devices. No raw footage leaves the room.</p>
+        </div>
+        <div className="privacy-card">
+          <div className="privacy-card-header">
+            <UserX size={20} />
+            <h2>No Individual Tracking</h2>
           </div>
-          <div className="principle-card">
-            <div className="principle-icon">
-              <Lock size={24} />
-            </div>
-            <h4>Data Minimization</h4>
-            <p>Only aggregate statistics are stored. No personal data collected or retained.</p>
+          <p className="card-description">System counts occupancy only. No facial recognition or person identification.</p>
+        </div>
+        <div className="privacy-card highlight">
+          <div className="privacy-card-header">
+            <Lock size={20} />
+            <h2>Data Minimization</h2>
           </div>
-          <div className="principle-card">
-            <div className="principle-icon">
-              <Eye size={24} />
-            </div>
-            <h4>Transparency</h4>
-            <p>Clear signage in monitored rooms. Full disclosure of monitoring methods.</p>
+          <p className="card-description">Only aggregate statistics are stored. No personal data collected or retained.</p>
+        </div>
+        <div className="privacy-card info">
+          <div className="privacy-card-header">
+            <Eye size={20} />
+            <h2>Transparency</h2>
           </div>
+          <p className="card-description">Clear signage in monitored rooms. Full disclosure of monitoring methods.</p>
         </div>
       </div>
 
-      {/* Room Monitoring Methods */}
-      <div className="monitoring-section" ref={el => sectionsRef.current[1] = el}>
-        <h2>Room Monitoring Methods</h2>
-        
-        <div className="monitoring-grid">
-          {/* Camera Rooms */}
-          <div className="monitoring-card camera">
-            <div className="card-header">
-              <Camera size={20} />
-              <h3>Camera-Enabled Rooms</h3>
-              <span className="room-count">{privacyData.cameraRooms.length} rooms</span>
-            </div>
-            <div className="card-body">
-              <p className="method-description">
-                These rooms use edge AI cameras for occupancy detection. 
-                <strong> No video is stored or transmitted.</strong>
-              </p>
-              <ul className="room-list">
-                {privacyData.cameraRooms.map((room, index) => (
-                  <li key={index}>
-                    <span className="room-name">{room.name}</span>
-                    <div className="room-details">
-                      <span className="detail">
-                        <Server size={12} /> {room.processingType}
-                      </span>
-                      <span className="detail">
-                        <FileText size={12} /> Data Retention: {room.dataRetention}
-                      </span>
-                    </div>
-                  </li>
-                ))}
-              </ul>
-              <div className="privacy-features">
-                <h4>Privacy Features:</h4>
-                <ul>
-                  <li><CheckCircle size={14} /> Ghost View shows only anonymized silhouettes</li>
-                  <li><CheckCircle size={14} /> Edge processing - no cloud upload</li>
-                  <li><CheckCircle size={14} /> Real-time count only, no recording</li>
-                </ul>
-              </div>
-            </div>
+      <div className="privacy-grid" ref={el => sectionsRef.current[1] = el}>
+        <div className="privacy-card info">
+          <div className="privacy-card-header">
+            <Camera size={20} />
+            <h2>Camera-Enabled Rooms</h2>
           </div>
-
-          {/* Non-Camera Rooms */}
-          <div className="monitoring-card non-camera">
-            <div className="card-header">
-              <Radio size={20} />
-              <h3>Non-Camera Rooms</h3>
-              <span className="room-count">{privacyData.nonCameraRooms.length} rooms</span>
-            </div>
-            <div className="card-body">
-              <p className="method-description">
-                These rooms use alternative monitoring methods without cameras.
-                <strong> Zero visual monitoring.</strong>
-              </p>
-              <ul className="room-list">
-                {privacyData.nonCameraRooms.map((room, index) => (
-                  <li key={index}>
-                    <span className="room-name">{room.name}</span>
-                    <div className="room-details">
-                      <span className="detail">
-                        <Radio size={12} /> {room.method}
-                      </span>
-                    </div>
-                  </li>
-                ))}
-              </ul>
-              <div className="method-types">
-                <h4>Methods Used:</h4>
-                <div className="method-badges">
-                  <span className="method-badge">
-                    <Radio size={14} /> PIR Motion Sensors
-                  </span>
-                  <span className="method-badge">
-                    <Radio size={14} /> Smart Plug Monitoring
-                  </span>
-                  <span className="method-badge">
-                    <Radio size={14} /> Schedule-Based
-                  </span>
+          <p className="card-description">
+            These rooms use edge AI cameras for occupancy detection. <strong>No video is stored or transmitted.</strong>
+          </p>
+          <ul className="rooms-list">
+            {privacyData.cameraRooms.map((room, index) => (
+              <li key={index} className="room-item">
+                <div className="room-item-header">
+                  <span>{room.name}</span>
                 </div>
-              </div>
-            </div>
+                <div className="room-reason">Processing: {room.processingType}</div>
+                <div className="room-reason">Data Retention: {room.dataRetention}</div>
+              </li>
+            ))}
+          </ul>
+        </div>
+
+        <div className="privacy-card">
+          <div className="privacy-card-header">
+            <Radio size={20} />
+            <h2>Non-Camera Rooms</h2>
           </div>
+          <p className="card-description">
+            These rooms use alternative monitoring methods without cameras. <strong>Zero visual monitoring.</strong>
+          </p>
+          <ul className="rooms-list">
+            {privacyData.nonCameraRooms.map((room, index) => (
+              <li key={index} className="room-item">
+                <div className="room-item-header">
+                  <span>{room.name}</span>
+                </div>
+                <div className="room-reason">Method: {room.method}</div>
+              </li>
+            ))}
+          </ul>
         </div>
       </div>
 
-      {/* Compliance Statements */}
-      <div className="compliance-section" ref={el => sectionsRef.current[2] = el}>
-        <h2>Compliance Statements</h2>
+      <div className="privacy-card" ref={el => sectionsRef.current[2] = el}>
+        <div className="privacy-card-header">
+          <FileText size={20} />
+          <h2>Compliance Statements</h2>
+        </div>
         <div className="compliance-list">
           {privacyData.complianceStatements.map((statement, index) => (
             <div key={index} className="compliance-item">
-              <CheckCircle size={20} className="compliance-icon" />
+              <CheckCircle size={18} />
               <span>{statement}</span>
             </div>
           ))}
         </div>
       </div>
 
-      {/* Data Flow Diagram */}
-      <div className="data-flow-section" ref={el => sectionsRef.current[3] = el}>
-        <h2>How Data Flows</h2>
-        <div className="data-flow">
+      <div className="privacy-card" ref={el => sectionsRef.current[3] = el}>
+        <div className="privacy-card-header">
+          <Shield size={20} />
+          <h2>How Data Flows</h2>
+        </div>
+        <div className="processing-flow">
           <div className="flow-step">
-            <div className="step-icon">
-              <Camera size={24} />
-            </div>
+            <div className="step-number">1</div>
             <div className="step-content">
-              <h4>1. Capture</h4>
+              <h3>Capture</h3>
               <p>Camera captures video feed locally</p>
             </div>
           </div>
-          <div className="flow-arrow">→</div>
           <div className="flow-step">
-            <div className="step-icon">
-              <Server size={24} />
-            </div>
+            <div className="step-number">2</div>
             <div className="step-content">
-              <h4>2. Process</h4>
+              <h3>Process</h3>
               <p>Edge AI extracts occupancy count only</p>
             </div>
           </div>
-          <div className="flow-arrow">→</div>
           <div className="flow-step">
-            <div className="step-icon">
-              <FileText size={24} />
-            </div>
+            <div className="step-number">3</div>
             <div className="step-content">
-              <h4>3. Transmit</h4>
+              <h3>Transmit</h3>
               <p>Only count data sent to dashboard</p>
             </div>
           </div>
-          <div className="flow-arrow">→</div>
-          <div className="flow-step delete">
-            <div className="step-icon">
-              <EyeOff size={24} />
-            </div>
+          <div className="flow-step">
+            <div className="step-number">4</div>
             <div className="step-content">
-              <h4>4. Discard</h4>
+              <h3>Discard</h3>
               <p>Original video immediately discarded</p>
             </div>
           </div>
         </div>
       </div>
 
-      <div className="privacy-footer">
+      <div className="privacy-note">
         <p>
-          Watt-Watch is designed with privacy as a core principle. 
-          For questions or concerns, contact campus administration.
+          Watt-Watch is designed with privacy as a core principle. For questions or concerns, contact campus administration.
         </p>
       </div>
     </div>

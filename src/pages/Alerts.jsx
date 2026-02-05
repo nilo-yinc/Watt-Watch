@@ -6,8 +6,6 @@ import {
   Clock,
   Zap,
   ArrowRight,
-  CheckCircle,
-  XCircle,
   AlertCircle
 } from 'lucide-react';
 import { alertsData } from '../data/mockData';
@@ -34,12 +32,16 @@ const Alerts = () => {
     });
   }, []);
 
-  const getSeverityColor = (severity) => {
+  const getSeverityStyle = (severity) => {
     switch (severity) {
-      case 'high': return 'alert-high';
-      case 'medium': return 'alert-medium';
-      case 'low': return 'alert-low';
-      default: return 'alert-grey';
+      case 'high':
+        return { background: '#fee2e2', color: '#991b1b' };
+      case 'medium':
+        return { background: '#fef3c7', color: '#92400e' };
+      case 'low':
+        return { background: '#dcfce7', color: '#166534' };
+      default:
+        return { background: '#e2e8f0', color: '#475569' };
     }
   };
 
@@ -65,27 +67,23 @@ const Alerts = () => {
   };
 
   return (
-    <div className="alerts-page">
-      <div className="page-header" ref={headerRef}>
-        <div className="header-content">
-          <h1>
-            <AlertTriangle size={28} />
-            Energy Waste Alerts
-          </h1>
-          <p className="header-description">
-            Active alerts requiring attention. All actions are simulated for demonstration.
-          </p>
-        </div>
-        <div className="header-stats">
-          <div className="stat">
-            <span className="stat-value">{alertsData.length}</span>
-            <span className="stat-label">Active Alerts</span>
+    <div className="alerts-container">
+      <div className="alerts-header" ref={headerRef}>
+        <h1>
+          <AlertTriangle size={28} />
+          Energy Waste Alerts
+        </h1>
+        <p className="header-description">
+          Active alerts requiring attention. All actions are simulated for demonstration.
+        </p>
+        <div className="alerts-summary">
+          <div className="summary-item">
+            <AlertTriangle size={16} />
+            <span>{alertsData.length} Active Alerts</span>
           </div>
-          <div className="stat">
-            <span className="stat-value">
-              {alertsData.reduce((sum, a) => sum + a.estimatedWaste, 0).toFixed(1)}
-            </span>
-            <span className="stat-label">kWh Wasting</span>
+          <div className="summary-item">
+            <Zap size={16} />
+            <span>{alertsData.reduce((sum, a) => sum + a.estimatedWaste, 0).toFixed(1)} kWh Wasting</span>
           </div>
         </div>
       </div>
@@ -94,71 +92,57 @@ const Alerts = () => {
         {alertsData.map((alert, index) => (
           <div
             key={alert.id}
-            className={`alert-card ${getSeverityColor(alert.severity)}`}
+            className="alert-card"
             ref={el => alertsRef.current[index] = el}
           >
-            <div className="alert-header">
-              <div className="alert-severity">
-                {getSeverityIcon(alert.severity)}
-                <span className="severity-label">{alert.severity.toUpperCase()}</span>
-              </div>
-              <span className="simulated-badge">
-                <Zap size={12} /> Auto Action Simulated
-              </span>
+            <div className="alert-icon" style={getSeverityStyle(alert.severity)}>
+              {getSeverityIcon(alert.severity)}
             </div>
-
-            <div className="alert-body">
-              <div className="alert-main">
-                <h3 className="alert-room">{alert.roomName}</h3>
-                <span className="alert-room-type">{alert.roomType}</span>
+            <div className="alert-content">
+              <div className="alert-header-row">
+                <h3>{alert.roomName}</h3>
+                <div className="alert-badges">
+                  <span className="severity-badge" style={getSeverityStyle(alert.severity)}>
+                    {alert.severity.toUpperCase()}
+                  </span>
+                  <span className="auto-action-badge">
+                    <Zap size={12} /> Auto Action
+                  </span>
+                </div>
               </div>
 
               <div className="alert-details">
-                <div className="detail-item">
-                  <span className="detail-label">Wasting Appliance</span>
-                  <span className="detail-value">{alert.wastingAppliance}</span>
+                <div className="alert-detail-row">
+                  <AlertTriangle size={14} />
+                  <span>{alert.roomType}</span>
                 </div>
-                <div className="detail-item">
-                  <span className="detail-label">Duration</span>
-                  <span className="detail-value">
-                    <Clock size={14} /> {formatDuration(alert.duration)}
-                  </span>
+                <div className="alert-detail-row">
+                  <Clock size={14} />
+                  <span>{formatDuration(alert.duration)}</span>
                 </div>
-                <div className="detail-item">
-                  <span className="detail-label">Est. Waste</span>
-                  <span className="detail-value waste">{alert.estimatedWaste} kWh</span>
+                <div className="alert-detail-row">
+                  <Zap size={14} />
+                  <span>{alert.estimatedWaste} kWh waste</span>
                 </div>
               </div>
 
-              <div className="alert-action-status">
-                {alert.autoActionTaken ? (
-                  <div className="action-taken">
-                    <CheckCircle size={16} />
-                    <span>{alert.actionDetails}</span>
-                  </div>
-                ) : (
-                  <div className="action-pending">
-                    <Clock size={16} />
-                    <span>{alert.actionDetails}</span>
-                  </div>
-                )}
+              <div className="alert-reason">
+                {alert.wastingAppliance} • {alert.actionDetails}
               </div>
-            </div>
 
-            <div className="alert-footer">
-              <span className="alert-time">
-                Detected at {formatTimestamp(alert.timestamp)}
-              </span>
-              <Link to={`/room/${alert.roomId}`} className="view-room-btn">
-                View Room <ArrowRight size={14} />
-              </Link>
+              <div className="alert-footer">
+                <span className="alert-timestamp">Detected at {formatTimestamp(alert.timestamp)}</span>
+                <Link to={`/room/${alert.roomId}`} className="view-room-btn">
+                  View Room <ArrowRight size={14} />
+                </Link>
+              </div>
             </div>
           </div>
         ))}
       </div>
 
       {alertsData.length === 0 && (
-        <div className="empty-state">
+        <div className="no-alerts">
           <Zap size={48} />
           <h2>No Active Alerts</h2>
           <p>All rooms are operating efficiently!</p>

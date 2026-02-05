@@ -1,8 +1,1 @@
-# React + Vite
-
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
-
-Currently, two official plugins are available:
-
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+A comprehensive energy monitoring and management system built with React and Vite. Track, analyze, and optimize energy consumption in real-time across rooms and facilities with dashboards, alerts, analytics, heatmap visualizations, and specialized computer lab monitoring. Features include customizable thresholds, audit logs, and privacy controls.

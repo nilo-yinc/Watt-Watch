@@ -4,10 +4,6 @@ import { gsap } from 'gsap';
 import {
   ArrowLeft,
   Users,
-  Lightbulb,
-  Monitor,
-  Fan,
-  Wind,
   Power,
   Wifi,
   Eye,
@@ -24,8 +20,16 @@ const RoomDetail = () => {
   const navigate = useNavigate();
   const room = roomsData.find(r => r.id === parseInt(id));
   const [ghostView, setGhostView] = useState(false);
+  const [relayActive, setRelayActive] = useState(false);
   const pageRef = useRef(null);
   const cardsRef = useRef([]);
+
+  const handlePowerOverride = () => {
+    setRelayActive(!relayActive);
+    if (navigator.vibrate) {
+      navigator.vibrate(100);
+    }
+  };
 
   useEffect(() => {
     // Page animation
@@ -71,7 +75,7 @@ const RoomDetail = () => {
   const efficiency = 1 - (room.potentialSavings / (room.energyUsageToday || 1));
 
   return (
-    <div className="room-detail-page" ref={pageRef}>
+    <div className="room-detail-container" ref={pageRef}>
       <button onClick={() => navigate('/dashboard')} className="back-button">
         <ArrowLeft size={20} /> Back to Dashboard
       </button>
@@ -80,7 +84,7 @@ const RoomDetail = () => {
       <div className="room-detail-header" ref={el => cardsRef.current[0] = el}>
         <div className="header-content">
           <h1>{room.name}</h1>
-          <div className="room-badges">
+          <div className="room-meta">
             <span className="room-type-badge">{room.type}</span>
             <span
               className="efficiency-badge"
@@ -108,178 +112,144 @@ const RoomDetail = () => {
         </div>
       </div>
 
-      {/* Room Info Card */}
-      <div className="detail-card" ref={el => cardsRef.current[1] = el}>
-        <h2>Room Information</h2>
-        <div className="info-grid">
-          <div className="info-item">
-            <span className="info-label">Room Type</span>
-            <span className="info-value">{room.type}</span>
-          </div>
-          <div className="info-item">
-            <span className="info-label">Monitoring Method</span>
-            <span className="info-value">{room.monitoringMethod}</span>
-          </div>
-          <div className="info-item">
-            <span className="info-label">Current Occupancy</span>
-            <span className="info-value">
-              {room.occupancy > 0 ? `${room.occupancy} people` : 'Unoccupied'}
-            </span>
-          </div>
-          <div className="info-item">
-            <span className="info-label">Efficiency Level</span>
-            <span className="info-value" style={{ color: getStatusColor(efficiency) }}>
-              {(efficiency * 100).toFixed(0)}%
-            </span>
-          </div>
-        </div>
-      </div>
-
-      {/* Live Status Card */}
-      <div className="detail-card" ref={el => cardsRef.current[2] = el}>
-        <h2>Live Status</h2>
-        <div className="status-section">
-          <div className="status-row">
-            <Users size={20} />
-            <span className="status-label">Occupancy:</span>
-            <span className={`status-value ${room.occupancy > 0 ? 'active' : 'inactive'}`}>
-              {room.occupancy > 0 ? `Yes (${room.occupancy} people)` : 'No'}
-            </span>
+      <div className="detail-grid">
+        <div className="detail-card" ref={el => cardsRef.current[1] = el}>
+          <h2>Room Information</h2>
+          <div className="info-rows">
+            <div className="info-row">
+              <span className="info-label">Room Type</span>
+              <span className="info-value">{room.type}</span>
+            </div>
+            <div className="info-row">
+              <span className="info-label">Monitoring Method</span>
+              <span className="info-value">{room.monitoringMethod}</span>
+            </div>
+            <div className="info-row">
+              <span className="info-label">Current Occupancy</span>
+              <span className="info-value">
+                {room.occupancy > 0 ? `${room.occupancy} people` : 'Unoccupied'}
+              </span>
+            </div>
+            <div className="info-row">
+              <span className="info-label">Efficiency Level</span>
+              <span className="info-value" style={{ color: getStatusColor(efficiency) }}>
+                {(efficiency * 100).toFixed(0)}%
+              </span>
+            </div>
           </div>
         </div>
 
-        {/* Appliances */}
-        <div className="appliances-section">
-          <h3>Active Appliances</h3>
-          <div className="appliances-grid">
+        <div className="detail-card" ref={el => cardsRef.current[2] = el}>
+          <h2>Live Status</h2>
+          <div className="status-rows">
+            <div className="status-row">
+              <Users size={20} />
+              <span className="status-label">Occupancy:</span>
+              <span className={`status-value ${room.occupancy > 0 ? 'active' : 'inactive'}`}>
+                {room.occupancy > 0 ? `Yes (${room.occupancy} people)` : 'No'}
+              </span>
+            </div>
+          </div>
+
+          <div className="appliances-status">
+            <h3>Active Appliances</h3>
             {Object.entries(room.appliances).map(([applianceName, status]) => {
-              const icons = {
-                lights: <Lightbulb size={18} />,
-                ac: <Wind size={18} />,
-                fan: <Fan size={18} />,
-                monitor: <Monitor size={18} />,
-                projector: <Monitor size={18} />
-              };
-
               const label = applianceName.charAt(0).toUpperCase() + applianceName.slice(1);
-
               return (
-                <div key={applianceName} className="appliance-item">
-                  <div className="appliance-icon">
-                    {icons[applianceName] || <Power size={18} />}
-                  </div>
-                  <div className="appliance-info">
-                    <span className="appliance-name">{label}</span>
-                    <span className={`appliance-status ${status ? 'on' : 'off'}`}>
-                      {status ? 'ON' : 'OFF'}
-                    </span>
-                  </div>
+                <div key={applianceName} className="appliance-row">
+                  <span>{label}</span>
+                  <span className={status ? 'status-on' : 'status-off'}>{status ? 'ON' : 'OFF'}</span>
                 </div>
               );
             })}
           </div>
         </div>
-      </div>
 
-      {/* Hardware Simulation Panel */}
-      <div className="detail-card hardware-card" ref={el => cardsRef.current[3] = el}>
-        <h2>
-          <Power size={20} />
-          Hardware Simulation Panel
-        </h2>
-        <div className="hardware-content">
-          <div className="hardware-status">
-            <div className="status-item">
-              <Wifi size={20} />
-              <div>
-                <span className="status-label">IoT Device Status</span>
-                <span className="status-badge connected">
-                  <span className="badge-dot"></span>
-                  Connected
-                </span>
-              </div>
-            </div>
-          </div>
-          <button className="btn btn-warning">
-            <Power size={16} />
-            Simulate Power Override
-          </button>
-          <div className="hardware-note">
-            <AlertCircle size={16} />
-            <p>In real deployment, this triggers an IoT relay to cut power. ESP32 receives commands from cloud and controls physical relay.</p>
-          </div>
-        </div>
-      </div>
-
-      {/* Privacy & Monitoring Card */}
-      {room.monitoringMethod === 'Camera' && (
-        <div className="detail-card privacy-card" ref={el => cardsRef.current[4] = el}>
+        <div className="detail-card hardware-panel" ref={el => cardsRef.current[3] = el}>
           <h2>
-            <Eye size={20} />
-            Privacy-First Ghost View
+            <Power size={20} />
+            Hardware Simulation Panel
           </h2>
-          <div className="ghost-view-content">
-            <div className="ghost-view-toggle">
-              <span>Ghost View Mode:</span>
-              <button
-                onClick={() => setGhostView(!ghostView)}
-                className={`toggle-btn ${ghostView ? 'active' : ''}`}
-              >
-                {ghostView ? <Eye size={18} /> : <EyeOff size={18} />}
-                {ghostView ? 'ON' : 'OFF'}
-              </button>
-            </div>
-
-            {ghostView ? (
-              <div className="ghost-view-display">
-                <div className="ghost-silhouettes">
-                  {[...Array(Math.max(1, Math.min(room.occupancy, 5)))].map((_, i) => (
-                    <div key={i} className="ghost-silhouette">
-                      <Users size={32} />
-                    </div>
-                  ))}
+          <div className="hardware-content">
+            <div className="hardware-status">
+              <div className="hardware-row">
+                <Wifi size={20} />
+                <div>
+                  <span className="status-label">IoT Device Status</span>
+                  <span className="status-badge connected">
+                    <span className="badge-dot"></span>
+                    Connected
+                  </span>
                 </div>
-                <p className="ghost-label">Anonymized occupancy visualization</p>
               </div>
-            ) : (
-              <div className="data-only-mode">
-                <CheckCircle size={32} />
-                <p>Data-Only Mode</p>
-                <p className="mode-description">Showing metrics without visual representation</p>
-              </div>
-            )}
-
-            <div className="privacy-guarantees">
-              <div className="guarantee">
-                <CheckCircle size={16} />
-                No raw video stored
-              </div>
-              <div className="guarantee">
-                <CheckCircle size={16} />
-                All processing is local
-              </div>
-              <div className="guarantee">
-                <CheckCircle size={16} />
-                System monitors resources, not individuals
-              </div>
+            </div>
+            <button
+              className={`btn ${relayActive ? 'btn-danger' : 'btn-warning'}`}
+              onClick={handlePowerOverride}
+            >
+              <Power size={16} />
+              {relayActive ? 'Relay ON - Cut Power' : 'Simulate Power Override'}
+            </button>
+            <div className="hardware-explanation">
+              <AlertCircle size={16} />
+              <p>In real deployment, this triggers an IoT relay to cut power. ESP32 receives commands from cloud and controls physical relay.</p>
             </div>
           </div>
         </div>
-      )}
 
-      {/* Non-Camera Monitoring */}
-      {room.monitoringMethod !== 'Camera' && (
-        <div className="detail-card" ref={el => cardsRef.current[4] = el}>
-          <h2>
-            <CheckCircle size={20} />
-            Monitoring Method
-          </h2>
-          <div className="non-camera-info">
-            <p>This room uses <strong>{room.monitoringMethod}</strong> for energy monitoring.</p>
-            <p className="info-note">No camera hardware or visual processing is used in this space.</p>
+        {room.monitoringMethod === 'Camera' && (
+          <div className="detail-card" ref={el => cardsRef.current[4] = el}>
+            <h2>
+              <Eye size={20} />
+              Privacy-First Ghost View
+            </h2>
+            <div className="ghost-view-content">
+              <div className="ghost-view-toggle">
+                <span>Ghost View Mode:</span>
+                <button
+                  onClick={() => setGhostView(!ghostView)}
+                  className={`toggle-button ${ghostView ? 'toggle-on' : 'toggle-off'}`}
+                >
+                  {ghostView ? <Eye size={18} /> : <EyeOff size={18} />}
+                  {ghostView ? 'ON' : 'OFF'}
+                </button>
+              </div>
+
+              {ghostView ? (
+                <div className="ghost-view-display">
+                  <div className="ghost-silhouettes">
+                    {[...Array(Math.max(1, Math.min(room.occupancy, 5)))].map((_, i) => (
+                      <div key={i} className="ghost-silhouette">
+                        <Users size={32} />
+                      </div>
+                    ))}
+                  </div>
+                  <p className="ghost-view-label">Anonymized occupancy visualization</p>
+                </div>
+              ) : (
+                <div className="data-only-mode">
+                  <CheckCircle size={32} />
+                  <p>Data-Only Mode</p>
+                  <p className="mode-description">Showing metrics without visual representation</p>
+                </div>
+              )}
+            </div>
           </div>
-        </div>
-      )}
+        )}
+
+        {room.monitoringMethod !== 'Camera' && (
+          <div className="detail-card" ref={el => cardsRef.current[4] = el}>
+            <h2>
+              <CheckCircle size={20} />
+              Monitoring Method
+            </h2>
+            <div className="non-camera-info">
+              <p>This room uses <strong>{room.monitoringMethod}</strong> for energy monitoring.</p>
+              <p className="method-detail">No camera hardware or visual processing is used in this space.</p>
+            </div>
+          </div>
+        )}
+      </div>
     </div>
   );
 };

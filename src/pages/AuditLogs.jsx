@@ -6,7 +6,6 @@ import {
   Building2,
   Activity,
   MessageSquare,
-  Gauge,
   Filter,
   Download
 } from 'lucide-react';
@@ -16,6 +15,7 @@ const AuditLogs = () => {
   const pageRef = useRef(null);
   const tableRef = useRef(null);
   const rowRefs = useRef([]);
+  const [filteredLogs, setFilteredLogs] = React.useState(auditLogs);
 
   useEffect(() => {
     // Page animation
@@ -59,24 +59,32 @@ const AuditLogs = () => {
     if (action.includes('reduction')) return <Activity size={16} />;
     if (action.includes('Alert')) return <MessageSquare size={16} />;
     if (action.includes('verified')) return <Activity size={16} />;
-    if (action.includes('override')) return <Gauge size={16} />;
     if (action.includes('activated')) return <Activity size={16} />;
     return <FileText size={16} />;
   };
 
   return (
-    <div className="audit-logs-page" ref={pageRef}>
-      <div className="page-header">
-        <h1>
+    <div className="audit-logs-container" ref={pageRef}>
+      <div className="audit-logs-header">
+        <div className="header-left">
           <FileText size={28} />
-          Audit Logs
-        </h1>
-        <p className="header-description">
-          Complete history of all system actions and automated decisions
-        </p>
+          <div>
+            <h1>Audit Logs</h1>
+            <p className="audit-subtitle">
+              Complete history of all system actions and automated decisions
+            </p>
+          </div>
+        </div>
+        <div className="logs-count">
+          <Activity size={16} /> {filteredLogs.length} Entries
+        </div>
       </div>
 
-      {/* Filters */}
+      <div className="simulation-notice">
+        <span className="notice-badge">Simulated</span>
+        All entries are generated for prototype demonstration purposes.
+      </div>
+
       <div className="logs-controls">
         <button className="btn btn-secondary btn-sm">
           <Filter size={16} />
@@ -88,8 +96,7 @@ const AuditLogs = () => {
         </button>
       </div>
 
-      {/* Logs Table */}
-      <div className="logs-table-wrapper" ref={tableRef}>
+      <div className="logs-table-container" ref={tableRef}>
         <table className="logs-table">
           <thead>
             <tr>
@@ -102,12 +109,11 @@ const AuditLogs = () => {
             </tr>
           </thead>
           <tbody>
-            {auditLogs.map((log, index) => {
+            {filteredLogs.map((log, index) => {
               const ts = formatTimestamp(log.timestamp);
               return (
                 <tr
                   key={log.id}
-                  className="log-row"
                   ref={el => rowRefs.current[index] = el}
                 >
                   <td className="timestamp-cell">
@@ -132,12 +138,18 @@ const AuditLogs = () => {
                   </td>
                   <td className="confidence-cell">
                     {log.confidence !== null ? (
-                      <div className={`confidence-indicator ${getConfidenceColor(log.confidence)}`}>
-                        <Gauge size={14} />
-                        <span>{log.confidence}%</span>
+                      <div className="confidence-bar-container">
+                        <div
+                          className="confidence-bar"
+                          style={{
+                            width: `${log.confidence}%`,
+                            background: log.confidence >= 95 ? '#10b981' : log.confidence >= 85 ? '#f59e0b' : '#ef4444'
+                          }}
+                        ></div>
+                        <span className="confidence-text">{log.confidence}%</span>
                       </div>
                     ) : (
-                      <span className="confidence-na">—</span>
+                      <span className="confidence-text">—</span>
                     )}
                   </td>
                   <td className="status-cell">
@@ -155,14 +167,14 @@ const AuditLogs = () => {
         </table>
       </div>
 
-      {/* Info Footer */}
       <div className="logs-footer">
-        <h3>About System Logs</h3>
-        <p>
-          Audit logs provide a complete, immutable record of all system actions. Each entry includes
-          the timestamp, affected room, action taken, reasoning, and confidence level of automated decisions.
-          These logs are essential for compliance, troubleshooting, and energy audits.
-        </p>
+        <div className="footer-info">
+          <h3>About System Logs</h3>
+          <p>
+            Audit logs provide a complete, immutable record of all system actions. Each entry includes
+            the timestamp, affected room, action taken, reasoning, and confidence level of automated decisions.
+          </p>
+        </div>
       </div>
     </div>
   );

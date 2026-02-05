@@ -98,7 +98,7 @@ const Analytics = () => {
         );
 
         // Animate numbers
-        const valueElement = ref.querySelector('.kpi-value');
+        const valueElement = ref.querySelector('.kpi-number');
         if (valueElement) {
           const finalValue = parseFloat(kpis[index].value);
           gsap.to(
@@ -223,8 +223,8 @@ const Analytics = () => {
   };
 
   return (
-    <div className="analytics-page" ref={pageRef}>
-      <div className="page-header">
+    <div className="analytics-container" ref={pageRef}>
+      <div className="analytics-header">
         <h1>
           <TrendingUp size={28} />
           Energy Analytics
@@ -232,6 +232,11 @@ const Analytics = () => {
         <p className="header-description">
           Real-time insights into campus energy usage and savings
         </p>
+      </div>
+
+      <div className="analytics-note">
+        <Info size={18} />
+        Values are estimated using standard appliance wattage assumptions.
       </div>
 
       {/* KPI Grid */}
@@ -263,17 +268,17 @@ const Analytics = () => {
       {/* Charts Grid */}
       <div className="charts-grid">
         <div className="chart-card" ref={el => chartRefs.current[0] = el}>
-          <h2 className="chart-title">Energy Saved Over Time</h2>
+          <h2>Energy Saved Over Time</h2>
           <p className="chart-description">Weekly trend of energy saved across campus</p>
-          <div className="chart-wrapper">
+          <div className="chart-container">
             <Line data={lineChartData} options={chartOptions} />
           </div>
         </div>
 
         <div className="chart-card" ref={el => chartRefs.current[1] = el}>
-          <h2 className="chart-title">Energy Waste by Room</h2>
+          <h2>Energy Waste by Room</h2>
           <p className="chart-description">Top rooms with detected energy waste</p>
-          <div className="chart-wrapper">
+          <div className="chart-container">
             <Bar data={barChartData} options={chartOptions} />
           </div>
         </div>
@@ -281,9 +286,9 @@ const Analytics = () => {
 
       {/* Monthly Trend */}
       <div className="chart-card wide" ref={el => chartRefs.current[2] = el}>
-        <h2 className="chart-title">Monthly Trend</h2>
+        <h2>Monthly Trend</h2>
         <p className="chart-description">Cumulative energy savings by week</p>
-        <div className="chart-wrapper">
+        <div className="chart-container">
           <Bar
             data={{
               labels: energyAnalytics.monthlyTrend.labels,
@@ -302,14 +307,9 @@ const Analytics = () => {
         </div>
       </div>
 
-      {/* Disclaimer */}
-      <div className="analytics-disclaimer">
+      <div className="analytics-note">
         <Info size={18} />
-        <p>
-          Values are estimated using standard appliance wattage assumptions.
-          Actual savings may vary based on real-world conditions.
-          CO₂ calculations use average grid emission factors.
-        </p>
+        Actual savings may vary based on real-world conditions. CO₂ calculations use average grid emission factors.
       </div>
     </div>
   );
